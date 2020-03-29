@@ -11,14 +11,17 @@ df_print: paged
 ---
 
 
-# Data description
 
 
-Description : This data set is used to describe the fungal invasion of 5 varieties of apple by 7 different fusarium strains.  
+## Internal questions 
+ 
+- Is radius the radius of the apple ? If yes, how do you interpret the fact that the Fungal Radial Advance is bigger than the size of the apple ?
+-> (Auriane) Yes I think it is the radius of the apple. It is usually not bigger than the radial fungal advance if you look line by line, except for line 18 and 21. And I am not sure how to explain it either...
 
-Variables/names :
+```{r}
+data[,5]>data[,6]
+```
 
-Questions : - Is radius the radius of the apple ? If yes, how do you interpret the fact that the Fungal Radial Advance is bigger than the size of the apple ?
 
 #Import and loading data
 
@@ -33,10 +36,27 @@ colnames(data) <- c("variety", "strain", "days", "weight", "radius", "fungal rad
 data
 ```
 
+# Data description
 
+
+Description : This data set is used to describe the fungal invasion of 5 varieties of apple by 7 different fusarium strains.  
+
+Variables/names :
+
+
+Questions : We are interested in comparing
+  - the infecting power depending on the conditions of infection (strain of fungi, day of infection, temperature)
+  - the resistance to invasion of different varieties of apples, and their characteristics (weight, radius)
+  
 # Exploratory data analysis 
 
 ```{r}
+str(data)
+
+data$variety <- as.factor(data$variety)
+data$strain <- as.factor(data$strain)
+
+
 summary(data)
 ```
 Different plots to illustrate the data :
@@ -50,16 +70,19 @@ plot(data$days, data$`fungal radial advance`)
 ```
 
 Here, we want to observe the rate of advance of the fungal invasion depending on the fusarium strain and the variety of apple. 
+
 ```{r}
 tapply(data$`rate of advance`, list(data$strain, data$variety), mean)
 ```
 
 Now we want to compare the rate of advance with the number of days
+
 ```{r}
 tapply(data$`rate of advance`, list(data$strain, data$days), mean)
 ```
 
 Definition of the different linear models
+
 ```{r}
 fit.s = lm(`rate of advance` ~ strain, data=data)
 fit.sv = lm(`rate of advance` ~ strain+variety, data=data)
