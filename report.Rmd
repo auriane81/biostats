@@ -56,7 +56,6 @@ str(data)
 data$variety <- as.factor(data$variety)
 data$strain <- as.factor(data$strain)
 
-
 summary(data)
 ```
 Different plots to illustrate the data :
@@ -69,17 +68,78 @@ plot(data$variety, data$`fungal radial advance`)
 plot(data$days, data$`fungal radial advance`)
 ```
 
+
+## Fungal radial advance dependencies
+
 Here, we want to observe the rate of advance of the fungal invasion depending on the fusarium strain and the variety of apple. 
+
+```{r}
+plot.design(x=data$`fungal radial advance`~.,data=data[,c(1,2,6)], ylab= 'Fungal radial advance')
+plot.design(x=data$`fungal radial advance`~.,data=data[,c(1,2,6)], ylab= 'Fungal radial advance', fun=sd)
+
+
+```
+
+2 strains seem very less virulent (2 & 3 corresponding to strains B)
+Variance is very dependent on the variety : variety 3 has especially high sd
+
+
+```{r}
+boxplot(data$`fungal radial advance`~data$days, ylab='Fungal radial advance')
+```
+
+
+```{r}
+plot(data$weight, data$`fungal radial advance`)
+plot(data$radius, data$`fungal radial advance`)
+```
+
+
+## Rate of advance
+
 
 ```{r}
 tapply(data$`rate of advance`, list(data$strain, data$variety), mean)
 ```
+
+
+```{r}
+plot.design(x=data$`rate of advance`~.,data=data[,c(1,2,7)], ylab= 'Rate of fungal advance')
+plot.design(x=data$`rate of advance`~.,data=data[,c(1,2,7)], ylab= 'Rate of fungal advance', fun =sd)
+
+```
+
+The strain part is similar to fungal radius.
+Same tendencies also far variety, however, more marked here. Also, variety 2 is a little less virulent and 5 more (significant ? don't think so).
+
+Variety 3 has still a very higher sd
+Otherwise, less variance differences
 
 Now we want to compare the rate of advance with the number of days
 
 ```{r}
 tapply(data$`rate of advance`, list(data$strain, data$days), mean)
 ```
+
+```{r}
+boxplot(data$`rate of advance`~data$days, ylab='Fungal rate of advance')
+```
+
+The rate of advance seem inversly correlated to the day of infection !
+Also we can see one oulier :
+
+```{r}
+data[17,]
+```
+
+
+```{r}
+plot(data$weight, data$`rate of advance`)
+plot(data$radius, data$`rate of advance`)
+```
+
+
+#Model selection
 
 Definition of the different linear models
 
