@@ -13,10 +13,10 @@ df_print: paged
 
 
 
-## Internal questions 
+#### Internal questions 
  
 - Is radius the radius of the apple ? If yes, how do you interpret the fact that the Fungal Radial Advance is bigger than the size of the apple ?
--> (Auriane) Yes I think it is the radius of the apple. It is usually not bigger than the radial fungal advance if you look line by line, except for line 18 and 21. And I am not sure how to explain it either...
+-> (Auriane) Yes I think it is the radius of the apple. It is usually not bigger than the radial fungal advance if you look line by line, except for line 18 and 21. And I am not sure how to explain it either... Je propose de juste les enlever
 
 ```{r}
 data[,5]>data[,6]
@@ -36,7 +36,7 @@ colnames(data) <- c("variety", "strain", "days", "weight", "radius", "fungal rad
 data
 ```
 
-# Data description
+#### Data description
 
 
 Description : This data set is used to describe the fungal invasion of 5 varieties of apple by 7 different fusarium strains.  
@@ -48,25 +48,38 @@ Questions : We are interested in comparing
   - the infecting power depending on the conditions of infection (strain of fungi, day of infection, temperature)
   - the resistance to invasion of different varieties of apples, and their characteristics (weight, radius)
   
-# Exploratory data analysis 
-
+#### Exploratory data analysis 
 ```{r}
-str(data)
-
 data$variety <- as.factor(data$variety)
 data$strain <- as.factor(data$strain)
+str(data)
+```
 
+```{r}
 summary(data)
 ```
-Different plots to illustrate the data :
+
+
+Different plots to illustrate the data, dependencies on factors: (à enlever je pense, meilleurs graphs dessous)
 ```{r}
 plot(data$strain,data$`rate of advance`)
-plot(data$variety,data$`rate of advance`)
+#outliers lines : 18, 19, 21 + 25, 3
+plot(data$variety,data$`rate of advance`)  
 plot(data$days,data$`rate of advance`)
 plot(data$strain, data$`fungal radial advance`)
+#outliers lines : 3, 19, 21, 28, 34
 plot(data$variety, data$`fungal radial advance`)
 plot(data$days, data$`fungal radial advance`)
 ```
+
+We can see that the variance of rate of advance is very dependent on the experiment (on the variety and strain especially).
+We can see about the mean of rate of advance and of fungal radius :
+ - strain 3, and also 2 and 1 lower
+ - variety 3 higher
+ (see more below)
+ 
+Ouliers detected : see code comments
+ 
 
 
 ## Fungal radial advance dependencies
@@ -77,10 +90,9 @@ Here, we want to observe the rate of advance of the fungal invasion depending on
 plot.design(x=data$`fungal radial advance`~.,data=data[,c(1,2,6)], ylab= 'Fungal radial advance')
 plot.design(x=data$`fungal radial advance`~.,data=data[,c(1,2,6)], ylab= 'Fungal radial advance', fun=sd)
 
-
 ```
 
-2 strains seem very less virulent (2 & 3 corresponding to strains B)
+2 strains seem very less virulent (2 & 3 corresponding to strains B).
 Variance is very dependent on the variety : variety 3 has especially high sd
 
 
@@ -88,16 +100,16 @@ Variance is very dependent on the variety : variety 3 has especially high sd
 boxplot(data$`fungal radial advance`~data$days, ylab='Fungal radial advance')
 ```
 
+Doesn't seem very significant exept high variance for day 54 . 
 
 ```{r}
 plot(data$weight, data$`fungal radial advance`)
 plot(data$radius, data$`fungal radial advance`)
 ```
 
+No pattern. higher variance at low values.
 
 ## Rate of advance
-
-
 ```{r}
 tapply(data$`rate of advance`, list(data$strain, data$variety), mean)
 ```
@@ -110,12 +122,11 @@ plot.design(x=data$`rate of advance`~.,data=data[,c(1,2,7)], ylab= 'Rate of fung
 ```
 
 The strain part is similar to fungal radius.
-Same tendencies also far variety, however, more marked here. Also, variety 2 is a little less virulent and 5 more (significant ? don't think so).
+Same tendencies also for variety, however, more marked here.
 
 Variety 3 has still a very higher sd
 Otherwise, less variance differences
 
-Now we want to compare the rate of advance with the number of days
 
 ```{r}
 tapply(data$`rate of advance`, list(data$strain, data$days), mean)
@@ -126,11 +137,13 @@ boxplot(data$`rate of advance`~data$days, ylab='Fungal rate of advance')
 ```
 
 The rate of advance seem inversly correlated to the day of infection !
+
 Also we can see one oulier :
 
 ```{r}
 data[17,]
 ```
+It is this one which create high variance for day54 and variety 3.
 
 
 ```{r}
@@ -138,30 +151,89 @@ plot(data$weight, data$`rate of advance`)
 plot(data$radius, data$`rate of advance`)
 ```
 
+No pattern. higher variance at low values.
 
-#Model selection
+##Remove outliers
+
+I propose to remove 3 outliers :
+ - 18 et 21 : fungi radius > apple radius
+ - 17 : add lots of variance
+ 
+```{r}
+data.rm<- data[-c(17,18,21),]
+```
+
+
+
+####Model selection
 
 Definition of the different linear models
 
 ```{r}
 fit.s = lm(`rate of advance` ~ strain, data=data)
-fit.sv = lm(`rate of advance` ~ strain+variety, data=data)
 fit.v=lm(`rate of advance`~variety, data = data)
+fit.sv = lm(`rate of advance` ~ strain+variety, data=data)
 fit.svd = lm (`rate of advance` ~ strain+variety+days, data=data)
 fit.svdw = lm (`rate of advance` ~ strain+variety+days+weight, data=data)
 fit.svdwr = lm (`rate of advance` ~ strain+variety+days+weight+radius, data=data)
 
 ```
 
+
 Comparing the different models with anova method :
 ```{r}
 anova(fit.s, fit.sv)
+anova(fit.v, fit.sv)
 ```
+```{r}
+summary(fit.svdwr)
+anova(fit.svdwr)
+```
+
+Only strains and variety seem significative. 
+(Where TF is days ???) -> le convertir de int a num et relancer !!!
+
+##Stepwise selection of variables
+```{r}
+fit.step <- step(lm(`rate of advance` ~ strain+variety, data=data))
+
+fit.all.step <- step(lm(`rate of advance` ~ strain+variety+days+weight+radius, data=data))
+```
+
+Stepwise procedure arrive au meme resultat : only strains and variety.
+
+```{r}
+summary(fit.all.step)
+```
+
+
+
+#Autre méthode (meme resultat)
+
+test stepwise exploration in AIC parameter, w/o fungal radial advance (too correlated)
+```{r}
+require(MASS)
+fit.fullAIC <- stepAIC(lm(`rate of advance`~variety+strain+days+radius+weight, data = data), data=data)
+summary(fit.fullAIC)
+for (k in 1:6) {
+  plot(fit.fullAIC, which=k)
+}
+#clearly 16 and 17 are aberrant, but why? 
+#Auriane : 17 c'est juste une exp qui a pas pris je pense (pomme pas infectée) -> perso je propose de l'enlever avant toutes les analyses
+```
+
+
+Stepwise : refaire avec un scope, pas juste degressif 
+
+
+##Correlations 
+
 Explore correlations and colinearity: 
 ```{r}
 pairs(data)
 cov(data[c("days", "weight", "radius", "fungal radial advance", "rate of advance")])
 cor(data[c("days", "weight", "radius", "fungal radial advance", "rate of advance")])
+
 p.cor<-function(x){
   inv<-solve(var(x))
   sdi<-diag(1/sqrt(diag(inv)))
@@ -171,6 +243,48 @@ p.cor<-function(x){
   return(p.cor.mat)}
 p.cor(data[c("days", "weight", "radius", "fungal radial advance", "rate of advance")])
 ```
+Correlations : attendues
+ - weight et radius
+ - fungal radius et rate of advance
+
+On peut se contenter de regarder fungal radius ou rate of advance a priori.
+
+
+####Interactions 
+```{r}
+interaction.plot(data$strain, data$variety, data$'rate of advance' )
+interaction.plot(data$variety, data$strain, data$'rate of advance' )
+
+interaction.plot(data$days, data$strain, data$'rate of advance' )
+
+
+```
+
+Interaction variety 3 * strain 3  et variety 2 * strain 3 possible.
+
+
+```{r}
+fit.inter1 <- aov(`rate of advance` ~ strain*variety, data=data)
+summary(fit.inter1)
+```
+```{r}
+fit.inter2 <- aov(`rate of advance` ~ variety*strain, data=data)
+summary(fit.inter2)
+```
+
+Interprétation ???
+
+
+#Foster differences
+
+```{r}
+foster.hsd <- TukeyHSD(fit.inter1, "strain")
+plot(foster.hsd)
+```
+
+
+####T
+
 Verify time dependence
 ```{r}
 par(mfrow = c(1,3), adj = 0.5)
@@ -241,14 +355,8 @@ title("strain 6 = f(t)")
 plot(x = data.s7$days, data.s7$`fungal radial advance`)
 title("strain 7 = f(t)")
 ```
-test stepwise exploration in AIC parameter, w/o fungal radial advance (too correlated)
-```{r}
-require(MASS)
-fit.fullAIC <- stepAIC(lm(`rate of advance`~variety+strain+radius+weight, data = data), data=data)
-summary(fit.fullAIC)
-for (k in 1:6) {
-  plot(fit.fullAIC, which=k)
-}
-#clearly 16 and 17 are aberrant, but why? 
-```
+
+
+
+
 
