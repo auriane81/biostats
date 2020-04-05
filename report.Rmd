@@ -191,16 +191,22 @@ anova(fit.svdwr)
 ```
 
 Only strains and variety seem significative. 
-(Where TF is days ???) -> le convertir de int a num et relancer !!!
+days produces NA because it overcorrelates with other variables.Indeed, variety and ays are equivalent, we can't have both in the same model.
+
+-> -> -> En fait, il faudrait modifier variety pour que ça reflete vraiment la marque de la pomme !
+
+
+
 
 ##Stepwise selection of variables
 ```{r}
 fit.step <- step(lm(`rate of advance` ~ strain+variety, data=data))
-
-fit.all.step <- step(lm(`rate of advance` ~ strain+variety+days+weight+radius, data=data))
+fit.all.step <- step(lm(`rate of advance` ~ strain+variety+ weight+radius, data=data))
+fit.2ways.step <- step(lm(`rate of advance` ~ strain+variety, scope = ~strain + variety + weight+radius, data=data))
 ```
 
-Stepwise procedure arrive au meme resultat : only strains and variety.
+Stepwise all procedure arrive au meme resultat : only strains and variety.
+Auriane : je n'arrive pas a faire step dans les 2 sens, qqn sait pq ??? Et aussi je ne trouve pas la fonction stepAIC
 
 ```{r}
 summary(fit.all.step)
@@ -223,7 +229,12 @@ for (k in 1:6) {
 ```
 
 
-Stepwise : refaire avec un scope, pas juste degressif 
+# Use days au lieu de variety
+```{r}
+fit.sd = lm(`rate of advance` ~ strain+days, data=data)
+summary(fit.sd)
+```
+
 
 
 ##Correlations 
@@ -249,12 +260,15 @@ Correlations : attendues
 
 On peut se contenter de regarder fungal radius ou rate of advance a priori.
 
+Also, days is strongly correlated with the reporter of infection.
+
+
+
 
 ####Interactions 
 ```{r}
 interaction.plot(data$strain, data$variety, data$'rate of advance' )
 interaction.plot(data$variety, data$strain, data$'rate of advance' )
-
 interaction.plot(data$days, data$strain, data$'rate of advance' )
 
 
@@ -281,11 +295,11 @@ Interprétation ???
 foster.hsd <- TukeyHSD(fit.inter1, "strain")
 plot(foster.hsd)
 ```
+Auriane : je ne sais pas faire marcher cette fonction apparemment.... ???
 
 
-####T
 
-Verify time dependence
+### Verify model fit : residuals
 ```{r}
 par(mfrow = c(1,3), adj = 0.5)
 plot(data$days, residuals(fit.s))
@@ -302,7 +316,17 @@ plot(data$weight, residuals(fit.v))
 title(('residuals of fit.v versus weight'))
 plot(data$weight, residuals(fit.sv))
 title(('residuals of fit.sv versus weight'))
+
+
+#general plots
+plot(residuals(fit.sv))
+qq<-qqnorm(residuals(fit.sv))
+stem(residuals(fit.sv))
+plot(fit.sv)
 ```
+
+##Check for time dependencies
+
 test time dependence of rate of advance 
 ```{r}
 par(pty="m")
