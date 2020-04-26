@@ -1,0 +1,449 @@
+---
+title: "Project A1 : Fungal invasion of the Apple fruit"
+author: "Auriane Cozic, Thibault de La Taille, Eloi Littner, Audrey Menaesse"
+date: "March 20, 2020"
+output: 
+  pdf_document:
+    df_print: paged
+geometry: margin=2.5cm
+fontsize: 12pt
+df_print: paged
+---
+
+
+
+
+#### Internal questions 
+ 
+- Is radius the radius of the apple ? If yes, how do you interpret the fact that the Fungal Radial Advance is bigger than the size of the apple ?
+-> (Auriane) Yes I think it is the radius of the apple. It is usually not bigger than the radial fungal advance if you look line by line, except for line 18 and 21. And I am not sure how to explain it either... Je propose de juste les enlever
+
+```{r}
+data[,5]>data[,6]
+```
+
+
+#Import and loading data
+
+```{r, echo=FALSE}
+#Load libraries and packages
+require(MASS)
+```
+
+
+```{r}
+data <-read.table("http://users.stat.ufl.edu/~winner/data/apple1.dat")
+colnames(data) <- c("variety", "strain", "days", "weight", "radius", "fungal radial advance", "rate of advance")
+data
+```
+
+I just wanted to check that rate of advance = fungal radial/days
+```{r}
+data$`fungal radial advance`/data$days
+```
+
+#### Data description
+
+
+Description : This data set is used to describe the fungal invasion of 5 varieties of apple by 7 different fusarium strains.  
+
+Variables/names :
+
+
+Questions : We are interested in comparing
+  - the infecting power depending on the conditions of infection (strain of fungi, day of infection, temperature)
+  - the resistance to invasion of different varieties of apples, and their characteristics (weight, radius)
+  
+#### Exploratory data analysis 
+
+
+
+```{r}
+#Variety est inexact en l'état car correspond en fait à 'days' : ajusté en 2 catégories (Bramley et Cox)
+data$variety[data$variety <= 2]<-"Bramley"
+data$variety[data$variety <= 5]<-"Cox"
+```
+
+Why not also retaining the year ? 
+
+```{r}
+#Ajout d'une variable "year"
+data$year = 1924
+data$year[data$days == 70] <- 1925
+data$year[data$days == 86] <- 1925
+
+```
+
+
+```{r}
+#ajout d'une variable température
+data$temperature<-12
+data$temperature[data$days == 138]<-3
+```
+
+
+```{r}
+data$variety <- as.factor(data$variety)
+data$strain <- as.factor(data$strain)
+str(data)
+```
+
+```{r}
+summary(data)
+```
+
+
+
+
+
+Different plots to illustrate the data, dependencies on factors: (à enlever je pense, meilleurs graphs dessous)
+```{r}
+plot(data$strain,data$`rate of advance`) 
+#outliers lines : 18, 19, 21 + 25, 3
+plot(data$variety,data$`rate of advance`)  
+plot(data$days,data$`rate of advance`)
+plot(data$strain, data$`fungal radial advance`)
+#outliers lines : 3, 19, 21, 28, 34
+plot(data$variety, data$`fungal radial advance`)
+plot(data$days, data$`fungal radial advance`)
+```
+
+We can see that the variance of rate of advance is very dependent on the experiment (on the variety and strain especially).
+We can see about the mean of rate of advance and of fungal radius :
+ - strain 3, and also 2 and 1 lower
+ - variety 3 higher
+ (see more below)
+ 
+Ouliers detected : see code comments
+ 
+
+
+## Fungal radial advance dependencies
+
+Here, we want to observe the rate of advance of the fungal invasion depending on the fusarium strain and the variety of apple. 
+
+```{r}
+plot.design(x=data$`fungal radial advance`~.,data=data[,c(1,2,6)], ylab= 'Fungal radial advance')
+plot.design(x=data$`fungal radial advance`~.,data=data[,c(1,2,6)], ylab= 'Fungal radial advance', fun=sd)
+
+```
+
+2 strains seem very less virulent (2 & 3 corresponding to strains B).
+Variety doesn't seem to have an impact. Cox variety have a higher variance.
+
+
+```{r}
+boxplot(data$`fungal radial advance`~data$days, ylab='Fungal radial advance')
+boxplot(data$`fungal radial advance`~data$temperature, ylab='Fungal radial advance')
+boxplot(data$`fungal radial advance`~data$year, ylab='Fungal radial advance')
+```
+
+Doesn't seem very significant exept high variance for day 54 . 
+
+```{r}
+plot(data$weight, data$`fungal radial advance`)
+plot(data$radius, data$`fungal radial advance`)
+```
+
+No pattern. higher variance at low values.
+
+## Rate of advance
+```{r}
+tapply(data$`rate of advance`, list(data$strain, data$variety), mean)
+```
+
+
+```{r}
+plot.design(x=data$`rate of advance`~.,data=data[,c(1,2,7)], ylab= 'Rate of fungal advance')
+plot.design(x=data$`rate of advance`~.,data=data[,c(1,2,7)], ylab= 'Rate of fungal advance', fun =sd)
+
+```
+
+Similar to radius fungal advance.
+
+
+```{r}
+tapply(data$`rate of advance`, list(data$strain, data$days), mean)
+```
+
+```{r}
+boxplot(data$`rate of advance`~data$days, ylab='Fungal rate of advance')
+boxplot(data$`rate of advance`~data$temperature, ylab='Fungal rate of advance')
+boxplot(data$`rate of advance`~data$year, ylab='Fungal rate of advance')
+```
+
+The rate of advance seem inversly correlated to the day of infection ! (No wayyyyy)
+Temperature seem to have an impact : the higher, the more the infection spread.
+
+Also we can see one oulier :
+
+```{r}
+data[17,]
+```
+It is this one which create high variance for day54 and variety 3.
+
+
+```{r}
+plot(data$weight, data$`rate of advance`)
+plot(data$radius, data$`rate of advance`)
+```
+
+No pattern. higher variance at low values.
+
+##Remove outliers
+
+I propose to remove 3 outliers :
+ - 18 et 21 : fungi radius > apple radius
+ - 17 : add lots of variance
+ 
+```{r}
+data.rm<- data[-c(17,18,21),]
+```
+
+
+
+####Model selection
+
+Definition of the different linear models
+
+```{r}
+fit.s = lm(`rate of advance` ~ strain, data=data)
+fit.d = lm(`rate of advance` ~ days, data=data)
+fit.v=lm(`rate of advance`~variety, data = data)
+fit.sv = lm(`rate of advance` ~ strain+variety, data=data)
+fit.sd = lm(`rate of advance` ~ strain+days, data=data)
+fit.svd = lm (`rate of advance` ~ strain+variety+days, data=data)
+fit.sdt = lm (`rate of advance` ~ strain+days+temperature, data=data)
+fit.svdw = lm (`rate of advance` ~ strain+variety+days+weight, data=data)
+fit.svdwr = lm (`rate of advance` ~ strain+variety+days+weight+radius, data=data)
+fit.svdwrt= lm (`rate of advance` ~ strain+variety+days+weight+radius+temperature, data=data)
+fit.svdwrty= lm (`rate of advance` ~ strain+variety+days+weight+radius+temperature+year, data=data)
+
+```
+
+
+Comparing two different models with anova method :
+```{r}
+anova(fit.s, fit.sd)
+anova(fit.d, fit.sd)
+
+```
+
+Strain and Days are relevant.
+
+
+```{r}
+summary(fit.svdwrty)
+anova(fit.svdwrty)
+```
+
+Only strains and days are significative. 
+
+
+##Stepwise selection of variables
+```{r}
+require(MASS)
+fit.step <- step(lm(`rate of advance` ~ strain+days+ weight+radius+temperature+year, data=data))
+fit.2ways.step <- step(lm(`rate of advance` ~ strain+variety, scope = ~strain + variety + weight+radius, data=data))
+fit.stepAIC <- stepAIC(lm(`rate of advance` ~ strain+days+ weight+radius+temperature+year, data=data))
+```
+
+Stepwise backward procedure garde toutes les variables.
+
+Auriane : je n'arrive pas a faire step dans les 2 sens (fit.2ways.step), qqn sait pq ???
+
+
+```{r}
+summary(fit.step)
+summary(fit.stepAIC)
+```
+
+
+#Autre méthode (meme resultat)
+
+test stepwise exploration in AIC parameter, w/o fungal radial advance (too correlated)
+```{r}
+fit.fullAIC <- stepAIC(lm(`rate of advance`~variety+strain+days+radius+weight+temperature+year, data = data), data=data)
+summary(fit.fullAIC)
+for (k in 1:6) {
+  plot(fit.fullAIC, which=k)
+}
+#clearly 16 and 17 are aberrant, but why? 
+#Auriane : 17 c'est juste une exp qui a pas pris je pense (pomme pas infectée) -> perso je propose de l'enlever avant toutes les analyses
+```
+
+
+```{r}
+anova(fit.sd, fit.sdt)
+```
+
+Temperature is relevant also.
+Let's keep these 3 variables (strain, days and temperature) and continue with fit.sdt 
+
+
+##Correlations 
+
+Explore correlations and colinearity: 
+```{r}
+pairs(data)
+cov(data[c("days", "weight", "radius","temperature", "fungal radial advance", "rate of advance")])
+cor(data[c("days", "weight", "radius","temperature", "fungal radial advance", "rate of advance")])
+
+p.cor<-function(x){
+  inv<-solve(var(x))
+  sdi<-diag(1/sqrt(diag(inv)))
+  p.cor.mat<--(sdi%*%inv%*%sdi)
+  diag(p.cor.mat)<-1
+  rownames(p.cor.mat)<-colnames(p.cor.mat)<-colnames(x)
+  return(p.cor.mat)}
+p.cor(data[c("days", "weight", "radius", "fungal radial advance", "rate of advance")])
+```
+Correlations : attendues
+ - weight et radius
+ - fungal radius et rate of advance
+
+On peut se contenter de regarder fungal radius ou rate of advance a priori.
+
+Also, days is strongly correlated with the reporter of infection.
+
+
+
+
+####Interactions 
+```{r}
+interaction.plot(data$strain, data$variety, data$'rate of advance' )
+interaction.plot(data$variety, data$strain, data$'rate of advance' )
+interaction.plot(data$days, data$strain, data$'rate of advance' )
+interaction.plot(data$days, data$temperature, data$'rate of advance' )
+
+
+```
+
+Interaction entre variety et strain !
+
+
+```{r}
+fit.inter1 <- aov(`rate of advance` ~ strain*variety, data=data)
+summary(fit.inter1)
+```
+```{r}
+fit.inter2 <- aov(`rate of advance` ~ variety*strain, data=data)
+summary(fit.inter2)
+```
+
+Interaction not strong enough to be relevant.
+
+
+#Foster differences
+
+```{r}
+foster.hsd <- TukeyHSD(fit.inter1, "strain")
+plot(foster.hsd)
+```
+
+Confirmation : interaction not relevant.
+
+
+### Verify model fit : residuals
+
+```{r}
+#Old plots
+
+par(mfrow = c(1,3), adj = 0.5)
+plot(data$days, residuals(fit.s))
+title(('residuals of fit.s versus days'))
+plot(data$days, residuals(fit.v))
+title(('residuals of fit.v versus days'))
+plot(data$days, residuals(fit.sv))
+title(('residuals of fit.sv versus days'))
+
+par(mfrow = c(1,3), adj = 0.5)
+plot(data$weight, residuals(fit.s))
+title(('residuals of fit.s versus weight'))
+plot(data$weight, residuals(fit.v))
+title(('residuals of fit.v versus weight'))
+plot(data$weight, residuals(fit.sv))
+title(('residuals of fit.sv versus weight'))
+
+
+```
+
+
+
+```{r}
+#general plots
+plot(residuals(fit.sdt))
+qq<-qqnorm(residuals(fit.sdt))
+stem(residuals(fit.sdt))
+plot(fit.sdt)
+```
+
+Seems good.
+
+##Check for time dependencies (Thibault)
+
+test time dependence of rate of advance 
+```{r}
+par(pty="m")
+layout(matrix(1:4, nrow = 2))
+data.s1 <-subset(data, strain ==1)
+data.s2 <-subset(data, strain ==2)
+data.s3 <-subset(data, strain ==3)
+data.s4 <-subset(data, strain ==4)
+data.s5 <-subset(data, strain ==5)
+data.s6 <-subset(data, strain ==6)
+data.s7 <-subset(data, strain ==7)
+plot(x = data.s1$days, data.s1$`rate of advance`)
+title("strain 1 = f(t)")
+plot(x = data.s2$days, data.s2$`rate of advance`)
+title("strain 2 = f(t)")
+plot(x = data.s3$days, data.s3$`rate of advance`)
+title("strain 3 = f(t)")
+plot(x = data.s4$days, data.s4$`rate of advance`)
+title("strain 4 = f(t)")
+plot(x = data.s5$days, data.s5$`rate of advance`)
+title("strain 5 = f(t)")
+plot(x = data.s6$days, data.s6$`rate of advance`)
+title("strain 6 = f(t)")
+plot(x = data.s7$days, data.s7$`rate of advance`)
+title("strain 7 = f(t)")
+```
+idem for radial advance
+```{r}
+par(pty="m")
+layout(matrix(1:4, nrow = 2))
+data.s1 <-subset(data, strain ==1)
+data.s2 <-subset(data, strain ==2)
+data.s3 <-subset(data, strain ==3)
+data.s4 <-subset(data, strain ==4)
+data.s5 <-subset(data, strain ==5)
+data.s6 <-subset(data, strain ==6)
+data.s7 <-subset(data, strain ==7)
+plot(x = data.s1$days, data.s1$`fungal radial advance`)
+title("strain 1 = f(t)")
+plot(x = data.s2$days, data.s2$`fungal radial advance`)
+title("strain 2 = f(t)")
+plot(x = data.s3$days, data.s3$`fungal radial advance`)
+title("strain 3 = f(t)")
+plot(x = data.s4$days, data.s4$`fungal radial advance`)
+title("strain 4 = f(t)")
+plot(x = data.s5$days, data.s5$`fungal radial advance`)
+title("strain 5 = f(t)")
+plot(x = data.s6$days, data.s6$`fungal radial advance`)
+title("strain 6 = f(t)")
+plot(x = data.s7$days, data.s7$`fungal radial advance`)
+title("strain 7 = f(t)")
+```
+
+
+###Conclusion
+
+The most impactant variable is the day of the infection : the infection is strongest (progresses more rapidly) when the apple is infected early.
+(Pas tres sure de comment interpreter ça ?)
+
+The strains B (strains 2 and 3) are very less virulent.
+
+Finally, low temperature leads to more resistance of the apple.
+
+
+
