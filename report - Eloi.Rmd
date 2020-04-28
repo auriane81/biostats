@@ -85,6 +85,7 @@ data$temperature[data$days == 138]<-3
 ```{r}
 data$variety <- as.factor(data$variety)
 data$strain <- as.factor(data$strain)
+data$year <- as.factor(data$year)
 str(data)
 ```
 
@@ -172,13 +173,13 @@ boxplot(data$`rate of advance`~data$temperature, ylab='Fungal rate of advance')
 boxplot(data$`rate of advance`~data$year, ylab='Fungal rate of advance')
 ```
 
-The rate of advance seem inversly correlated to the day of infection ! (No wayyyyy)
+The rate of advance seem inversly correlated to the day of infection !  (comment : remove the day variable)
 Temperature seem to have an impact : the higher, the more the infection spread.
 
 Also we can see one oulier :
 
 ```{r}
-data[17,]
+data[15:19,]
 ```
 It is this one which create high variance for day54 and variety 3.
 
@@ -243,8 +244,8 @@ Only strains and days are significative.
 ##Stepwise selection of variables
 ```{r}
 require(MASS)
-fit.step <- step(lm(`rate of advance` ~ strain+days+ weight+radius+temperature+year, data=data))
-fit.2ways.step <- step(lm(`rate of advance` ~ strain+variety, scope = ~strain + variety + weight+radius, data=data))
+fit.step <- step(lm(`rate of advance` ~ strain+days+ weight+radius+temperature+year, data=data)) 
+fit.2ways.step <- step(lm(`rate of advance` ~ strain+variety, scope = ~ weight+radius, data=data))
 fit.stepAIC <- stepAIC(lm(`rate of advance` ~ strain+days+ weight+radius+temperature+year, data=data))
 ```
 
