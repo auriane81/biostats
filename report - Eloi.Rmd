@@ -37,6 +37,11 @@ colnames(data) <- c("variety", "strain", "days", "weight", "radius", "fungal rad
 data
 ```
 
+I just wanted to check that rate of advance = fungal radial/days
+```{r}
+data$`fungal radial advance`/data$days
+```
+
 #### Data description
 
 
@@ -59,6 +64,17 @@ data$variety[data$variety <= 2]<-"Bramley"
 data$variety[data$variety <= 5]<-"Cox"
 ```
 
+Why not also retaining the year ? 
+
+```{r}
+#Ajout d'une variable "year"
+data$year = 1924
+data$year[data$days == 70] <- 1925
+data$year[data$days == 86] <- 1925
+
+```
+
+
 ```{r}
 #ajout d'une variable température
 data$temperature<-12
@@ -69,6 +85,7 @@ data$temperature[data$days == 138]<-3
 ```{r}
 data$variety <- as.factor(data$variety)
 data$strain <- as.factor(data$strain)
+data$year <- as.factor(data$year)
 str(data)
 ```
 
@@ -82,7 +99,7 @@ summary(data)
 
 Different plots to illustrate the data, dependencies on factors: (à enlever je pense, meilleurs graphs dessous)
 ```{r}
-plot(data$strain,data$`rate of advance`)
+plot(data$strain,data$`rate of advance`) 
 #outliers lines : 18, 19, 21 + 25, 3
 plot(data$variety,data$`rate of advance`)  
 plot(data$days,data$`rate of advance`)
@@ -119,6 +136,7 @@ Variety doesn't seem to have an impact. Cox variety have a higher variance.
 ```{r}
 boxplot(data$`fungal radial advance`~data$days, ylab='Fungal radial advance')
 boxplot(data$`fungal radial advance`~data$temperature, ylab='Fungal radial advance')
+boxplot(data$`fungal radial advance`~data$year, ylab='Fungal radial advance')
 ```
 
 Doesn't seem very significant exept high variance for day 54 . 
@@ -152,15 +170,16 @@ tapply(data$`rate of advance`, list(data$strain, data$days), mean)
 ```{r}
 boxplot(data$`rate of advance`~data$days, ylab='Fungal rate of advance')
 boxplot(data$`rate of advance`~data$temperature, ylab='Fungal rate of advance')
+boxplot(data$`rate of advance`~data$year, ylab='Fungal rate of advance')
 ```
 
-The rate of advance seem inversly correlated to the day of infection !
+The rate of advance seem inversly correlated to the day of infection !  (comment : remove the day variable)
 Temperature seem to have an impact : the higher, the more the infection spread.
 
 Also we can see one oulier :
 
 ```{r}
-data[17,]
+data[15:19,]
 ```
 It is this one which create high variance for day54 and variety 3.
 
@@ -199,6 +218,7 @@ fit.sdt = lm (`rate of advance` ~ strain+days+temperature, data=data)
 fit.svdw = lm (`rate of advance` ~ strain+variety+days+weight, data=data)
 fit.svdwr = lm (`rate of advance` ~ strain+variety+days+weight+radius, data=data)
 fit.svdwrt= lm (`rate of advance` ~ strain+variety+days+weight+radius+temperature, data=data)
+fit.svdwrty= lm (`rate of advance` ~ strain+variety+days+weight+radius+temperature+year, data=data)
 
 ```
 
@@ -214,8 +234,8 @@ Strain and Days are relevant.
 
 
 ```{r}
-summary(fit.svdwrt)
-anova(fit.svdwrt)
+summary(fit.svdwrty)
+anova(fit.svdwrty)
 ```
 
 Only strains and days are significative. 
@@ -223,9 +243,10 @@ Only strains and days are significative.
 
 ##Stepwise selection of variables
 ```{r}
-fit.step <- step(lm(`rate of advance` ~ strain+days+ weight+radius+temperature, data=data))
-fit.2ways.step <- step(lm(`rate of advance` ~ strain+variety, scope = ~strain + variety + weight+radius, data=data))
-fit.stepAIC <- stepAIC(lm(`rate of advance` ~ strain+days+ weight+radius+temperature, data=data))
+require(MASS)
+fit.step <- step(lm(`rate of advance` ~ strain+days+ weight+radius+temperature+year, data=data)) 
+fit.2ways.step <- step(lm(`rate of advance` ~ strain+variety, scope = ~ weight+radius, data=data))
+fit.stepAIC <- stepAIC(lm(`rate of advance` ~ strain+days+ weight+radius+temperature+year, data=data))
 ```
 
 Stepwise backward procedure garde toutes les variables.
@@ -235,6 +256,7 @@ Auriane : je n'arrive pas a faire step dans les 2 sens (fit.2ways.step), qqn sai
 
 ```{r}
 summary(fit.step)
+summary(fit.stepAIC)
 ```
 
 
@@ -242,7 +264,7 @@ summary(fit.step)
 
 test stepwise exploration in AIC parameter, w/o fungal radial advance (too correlated)
 ```{r}
-fit.fullAIC <- stepAIC(lm(`rate of advance`~variety+strain+days+radius+weight, data = data), data=data)
+fit.fullAIC <- stepAIC(lm(`rate of advance`~variety+strain+days+radius+weight+temperature+year, data = data), data=data)
 summary(fit.fullAIC)
 for (k in 1:6) {
   plot(fit.fullAIC, which=k)

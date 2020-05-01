@@ -1,7 +1,7 @@
 ---
 title: "Project A1 : Fungal invasion of the Apple fruit"
 author: "Auriane Cozic, Thibault de La Taille, Eloi Littner, Audrey Menaesse"
-date: "March 20, 2020"
+date: "May 1st, 2020"
 output: 
   pdf_document:
     df_print: paged
@@ -13,32 +13,47 @@ df_print: paged
 
 
 
-#### Internal questions 
- 
-- Is radius the radius of the apple ? If yes, how do you interpret the fact that the Fungal Radial Advance is bigger than the size of the apple ?
--> (Auriane) Yes I think it is the radius of the apple. It is usually not bigger than the radial fungal advance if you look line by line, except for line 18 and 21. And I am not sure how to explain it either... Je propose de juste les enlever
+#### Remaining questions
 
-```{r}
-data[,5]>data[,6]
-```
-
+#TODO : Find a solution to these questions
+- How to deal with samples 18 and 21, that have radial advance > radius ?
+- Deal with temperature / years : factors ? numerical ? 
 
 #Import and loading data
+
 
 ```{r, echo=FALSE}
 #Load libraries and packages
 require(MASS)
 ```
 
-
 ```{r}
 data <-read.table("http://users.stat.ufl.edu/~winner/data/apple1.dat")
 colnames(data) <- c("variety", "strain", "days", "weight", "radius", "fungal radial advance", "rate of advance")
-data
+```
+
+We add some meta data, that are under the general "strain" variable
+```{r}
+data$variety[data$variety <= 2]<-"Bramley"
+data$variety[data$variety <= 5]<-"Cox"
+
+data$year = 1924
+data$year[data$days == 70] <- 1925
+data$year[data$days == 86] <- 1925
+
+data$temperature<-12
+data$temperature[data$days == 138]<-3
+
+data$variety <- as.factor(data$variety)
+data$strain <- as.factor(data$strain)
+data$year <- as.factor(data$year) 
+data$temperature<- as.factor(data$temperature)#TODO : I'm not sure about the fact that year should be a factor and temperature not
+str(data) 
+
 ```
 
 #### Data description
-
+#TODO : detail this description. Say why we remove days from our explainatory, and why rate of advance is our final choice for main variable
 
 Description : This data set is used to describe the fungal invasion of 5 varieties of apple by 7 different fusarium strains.  
 
@@ -51,46 +66,15 @@ Questions : We are interested in comparing
   
 #### Exploratory data analysis 
 
-
-
-```{r}
-#Variety est inexact en l'état car correspond en fait à 'days' : ajusté en 2 catégories (Bramley et Cox)
-data$variety[data$variety <= 2]<-"Bramley"
-data$variety[data$variety <= 5]<-"Cox"
-```
-
-```{r}
-#ajout d'une variable température
-data$temperature<-12
-data$temperature[data$days == 138]<-3
-```
-
-
-```{r}
-data$variety <- as.factor(data$variety)
-data$strain <- as.factor(data$strain)
-str(data)
-```
-
 ```{r}
 summary(data)
 ```
+#TODO: comment more on this summary or remove it 
 
 
 
 
 
-Different plots to illustrate the data, dependencies on factors: (à enlever je pense, meilleurs graphs dessous)
-```{r}
-plot(data$strain,data$`rate of advance`)
-#outliers lines : 18, 19, 21 + 25, 3
-plot(data$variety,data$`rate of advance`)  
-plot(data$days,data$`rate of advance`)
-plot(data$strain, data$`fungal radial advance`)
-#outliers lines : 3, 19, 21, 28, 34
-plot(data$variety, data$`fungal radial advance`)
-plot(data$days, data$`fungal radial advance`)
-```
 
 We can see that the variance of rate of advance is very dependent on the experiment (on the variety and strain especially).
 We can see about the mean of rate of advance and of fungal radius :
@@ -99,82 +83,63 @@ We can see about the mean of rate of advance and of fungal radius :
  (see more below)
  
 Ouliers detected : see code comments
- 
+#TODO : move this comment to the appropriate location
 
 
 ## Fungal radial advance dependencies
-
+#TODO : Maybe remove this entire subpart if too long (only focus on rate)
 Here, we want to observe the rate of advance of the fungal invasion depending on the fusarium strain and the variety of apple. 
 
 ```{r}
-plot.design(x=data$`fungal radial advance`~.,data=data[,c(1,2,6)], ylab= 'Fungal radial advance')
-plot.design(x=data$`fungal radial advance`~.,data=data[,c(1,2,6)], ylab= 'Fungal radial advance', fun=sd)
-
+plot.design(x=data$`fungal radial advance`~.,data=data[,c(1,2,6,8,9)], ylab= 'Fungal radial advance')
 ```
+
+#TODO: comment on this, not sure that we want to keep it
 
 2 strains seem very less virulent (2 & 3 corresponding to strains B).
 Variety doesn't seem to have an impact. Cox variety have a higher variance.
 
 
-```{r}
-boxplot(data$`fungal radial advance`~data$days, ylab='Fungal radial advance')
-boxplot(data$`fungal radial advance`~data$temperature, ylab='Fungal radial advance')
-```
-
-Doesn't seem very significant exept high variance for day 54 . 
-
-```{r}
-plot(data$weight, data$`fungal radial advance`)
-plot(data$radius, data$`fungal radial advance`)
-```
-
-No pattern. higher variance at low values.
-
 ## Rate of advance
-```{r}
-tapply(data$`rate of advance`, list(data$strain, data$variety), mean)
-```
-
 
 ```{r}
-plot.design(x=data$`rate of advance`~.,data=data[,c(1,2,7)], ylab= 'Rate of fungal advance')
-plot.design(x=data$`rate of advance`~.,data=data[,c(1,2,7)], ylab= 'Rate of fungal advance', fun =sd)
+plot.design(x=data$`rate of advance`~.,data=data[,c(1,2,7,8,9)], ylab= 'Rate of fungal advance')
 
 ```
-
-Similar to radius fungal advance.
-
-
+#TODO : make the graph more pretty 
 ```{r}
-tapply(data$`rate of advance`, list(data$strain, data$days), mean)
-```
-
-```{r}
-boxplot(data$`rate of advance`~data$days, ylab='Fungal rate of advance')
+boxplot(data$`rate of advance`~data$variety, ylab='Fungal rate of advance')
+boxplot(data$`rate of advance`~data$strain, ylab='Fungal rate of advance')
 boxplot(data$`rate of advance`~data$temperature, ylab='Fungal rate of advance')
+boxplot(data$`rate of advance`~data$year, ylab='Fungal rate of advance')
 ```
 
-The rate of advance seem inversly correlated to the day of infection !
-Temperature seem to have an impact : the higher, the more the infection spread.
-
-Also we can see one oulier :
-
-```{r}
-data[17,]
-```
-It is this one which create high variance for day54 and variety 3.
+#TODO : comment more on these graphs. Say that we show them because seems to be a difference in the last plot. I'm not sure what to do with days : should we say there that there is too much correlation ? 
 
 
 ```{r}
 plot(data$weight, data$`rate of advance`)
 plot(data$radius, data$`rate of advance`)
 ```
+#TODO : interpret this graph
 
-No pattern. higher variance at low values.
+
+
+The rate of advance seem inversly correlated to the day of infection !  (comment : remove the day variable)
+Temperature seem to have an impact : the higher, the more the infection spread.
+
+Also we can see one oulier :
+
+```{r}
+data[15:19,]
+```
+It is this one which create high variance for day54 and variety 3.
+
+
 
 ##Remove outliers
-
-I propose to remove 3 outliers :
+#TODO : take a decision on these outliers
+I suggest to remove 3 outliers :
  - 18 et 21 : fungi radius > apple radius
  - 17 : add lots of variance
  
@@ -189,75 +154,48 @@ data.rm<- data[-c(17,18,21),]
 Definition of the different linear models
 
 ```{r}
-fit.s = lm(`rate of advance` ~ strain, data=data)
-fit.d = lm(`rate of advance` ~ days, data=data)
-fit.v=lm(`rate of advance`~variety, data = data)
-fit.sv = lm(`rate of advance` ~ strain+variety, data=data)
-fit.sd = lm(`rate of advance` ~ strain+days, data=data)
-fit.svd = lm (`rate of advance` ~ strain+variety+days, data=data)
-fit.sdt = lm (`rate of advance` ~ strain+days+temperature, data=data)
-fit.svdw = lm (`rate of advance` ~ strain+variety+days+weight, data=data)
-fit.svdwr = lm (`rate of advance` ~ strain+variety+days+weight+radius, data=data)
-fit.svdwrt= lm (`rate of advance` ~ strain+variety+days+weight+radius+temperature, data=data)
+
+fit.svwrty= lm (`rate of advance` ~ variety+strain+weight+radius+temperature+year, data=data)
 
 ```
-
-
-Comparing two different models with anova method :
-```{r}
-anova(fit.s, fit.sd)
-anova(fit.d, fit.sd)
-
-```
-
-Strain and Days are relevant.
-
 
 ```{r}
-summary(fit.svdwrt)
-anova(fit.svdwrt)
+summary(fit.svdwrty)
+anova(fit.svdwrty)
 ```
 
-Only strains and days are significative. 
-
+Only strains and temperature are significative, radius to some extent.
+#TODO : chose if we want to keep it in that format
 
 ##Stepwise selection of variables
 ```{r}
-fit.step <- step(lm(`rate of advance` ~ strain+days+ weight+radius+temperature, data=data))
-fit.2ways.step <- step(lm(`rate of advance` ~ strain+variety, scope = ~strain + variety + weight+radius, data=data))
-fit.stepAIC <- stepAIC(lm(`rate of advance` ~ strain+days+ weight+radius+temperature, data=data))
+
+fit.step <- step(lm(`rate of advance` ~ variety+strain+weight+radius+temperature+year, data=data)) 
+fit.stepAIC <- stepAIC(lm(`rate of advance` ~ variety+strain+weight+radius+temperature+year, data=data))
 ```
 
-Stepwise backward procedure garde toutes les variables.
-
-Auriane : je n'arrive pas a faire step dans les 2 sens (fit.2ways.step), qqn sait pq ???
+#TODO : choose if we want to keep both or not ?
 
 
 ```{r}
 summary(fit.step)
+summary(fit.stepAIC)
 ```
 
 
-#Autre méthode (meme resultat)
+#Interpretation
 
-test stepwise exploration in AIC parameter, w/o fungal radial advance (too correlated)
 ```{r}
-fit.fullAIC <- stepAIC(lm(`rate of advance`~variety+strain+days+radius+weight, data = data), data=data)
-summary(fit.fullAIC)
 for (k in 1:6) {
-  plot(fit.fullAIC, which=k)
+  plot(fit.stepAIC, which=k)
 }
-#clearly 16 and 17 are aberrant, but why? 
-#Auriane : 17 c'est juste une exp qui a pas pris je pense (pomme pas infectée) -> perso je propose de l'enlever avant toutes les analyses
 ```
 
 
 ```{r}
-anova(fit.sd, fit.sdt)
+data[7:12,]
 ```
-
-Temperature is relevant also.
-Let's keep these 3 variables (strain, days and temperature) and continue with fit.sdt 
+#TODO : analyse the outliers
 
 
 ##Correlations 
