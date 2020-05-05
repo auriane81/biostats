@@ -324,7 +324,7 @@ Seems good.
 test time dependence of rate of advance 
 ```{r}
 par(pty="m")
-layout(matrix(1:4, nrow = 2))
+layout(matrix(1:8, nrow = 2))
 data.s1 <-subset(data, strain ==1)
 data.s2 <-subset(data, strain ==2)
 data.s3 <-subset(data, strain ==3)
@@ -346,7 +346,17 @@ plot(x = data.s6$days, data.s6$`rate of advance`)
 title("strain 6 = f(t)")
 plot(x = data.s7$days, data.s7$`rate of advance`)
 title("strain 7 = f(t)")
+layout(1)
+plot(x=data$days, y= residuals(fit.stepAIC))
+title("residuals= f(days)")
+fit.confirm <- lm(residuals(fit.stepAIC)~data$days)
+summary(fit.confirm)
 ```
+
+Ajouter days ne semble pas significatif. 
+
+
+
 idem for radial advance
 ```{r}
 par(pty="m")
