@@ -12,12 +12,9 @@ df_print: paged
 
 
 
+#Introduction ()
 
-#### Remaining questions
 
-#TODO : Find a solution to these questions
-- How to deal with samples 18 and 21, that have radial advance > radius ?
-- Deal with temperature / years : factors ? numerical ? 
 
 #Import and loading data
 
@@ -53,7 +50,7 @@ str(data)
 ```
 
 #### Data description
-#TODO : detail this description. Say why we remove days from our explainatory, and why rate of advance is our final choice for main variable
+#TODO : detail this description. Say why we remove days from our explainatory, and why rate of advance is our final choice for main variable + why we remove outliers
 
 Description : This data set is used to describe the fungal invasion of 5 varieties of apple by 7 different fusarium strains.  
 
@@ -66,15 +63,6 @@ Questions : We are interested in comparing
   
 #### Exploratory data analysis 
 
-```{r}
-summary(data)
-```
-#TODO: comment more on this summary or remove it 
-
-
-
-
-
 
 We can see that the variance of rate of advance is very dependent on the experiment (on the variety and strain especially).
 We can see about the mean of rate of advance and of fungal radius :
@@ -86,21 +74,13 @@ Ouliers detected : see code comments
 #TODO : move this comment to the appropriate location
 
 
-## Fungal radial advance dependencies
-#TODO : Maybe remove this entire subpart if too long (only focus on rate)
-Here, we want to observe the rate of advance of the fungal invasion depending on the fusarium strain and the variety of apple. 
-
-```{r}
-plot.design(x=data$`fungal radial advance`~.,data=data[,c(1,2,6,8,9)], ylab= 'Fungal radial advance')
-```
-
-#TODO: comment on this, not sure that we want to keep it
-
-2 strains seem very less virulent (2 & 3 corresponding to strains B).
-Variety doesn't seem to have an impact. Cox variety have a higher variance.
-
-
 ## Rate of advance
+#TODO : replace data by data.rm and rerun 
+
+ 
+```{r}
+data.rm<- data[-c(17,18,21),]
+```
 
 ```{r}
 plot.design(x=data$`rate of advance`~.,data=data[,c(1,2,7,8,9)], ylab= 'Rate of fungal advance')
@@ -114,14 +94,13 @@ boxplot(data$`rate of advance`~data$temperature, ylab='Fungal rate of advance')
 boxplot(data$`rate of advance`~data$year, ylab='Fungal rate of advance')
 ```
 
-#TODO : comment more on these graphs. Say that we show them because seems to be a difference in the last plot. I'm not sure what to do with days : should we say there that there is too much correlation ? 
+#TODO : comment more on these graphs. Say that we show them because seems to be a difference in the last plot. Check if enough space for both graphs ore only first or second ?
 
 
 ```{r}
 plot(data$weight, data$`rate of advance`)
-plot(data$radius, data$`rate of advance`)
 ```
-#TODO : interpret this graph
+#TODO : interpret this graph. Remove the graph end say just a sentence about it. 
 
 
 ##Correlations 
@@ -153,38 +132,16 @@ qplot(data$days,data$variety)
 #   return(p.cor.mat)}
 # #p.cor(data[c("strain","days", "weight", "radius","temperature", "fungal radial advance", "rate of advance", "year")])
 ```
+#TODO : virer le matrix plot, et voir si on a la place de mettre les trois graphs de la fin, sinon les t�j et mettre une phrase. Move to supplementary 
 On voit bien une forte corrélation entre "weight" et "radius" sur le 1er graphe, ce qui est confirmé par les coefficients de corrélation; de même entre "rate of advance" et "fungal radial advance". 
 Cela est bien cohérent en fonction des méthodes de calcul liant les 2 respectivement (avec approximation pour weight). 
 
 De plus, en observant les relations entre "days" et les autres facteurs ("year", "temperature" et "variety", d'où sont extraites ces informations), il apparaît que "days" contient toutes ces facteurs, mais de manière non linéaire; et est donc à exclure car risquant de fausser l'analyse sans gain d'information.
 
 
+#TODO : check homscedasticity ? (if enough space)
 
 
-
-
-The rate of advance seem inversly correlated to the day of infection !  (comment : remove the day variable)
-Temperature seem to have an impact : the higher, the more the infection spread.
-
-Also we can see one oulier :
-
-```{r}
-data[15:19,]
-```
-It is this one which create high variance for day54 and variety 3.
-
-
-
-##Remove outliers
-#TODO : take a decision on these outliers
-I suggest to remove 3 outliers :
- - 18 et 21 : fungi radius > apple radius
- - 17 : add lots of variance
- 
-```{r}
-plot(data$`fungal radial advance`)
-data.rm<- data[-c(17,18,21),]
-```
 
 
 
@@ -192,201 +149,81 @@ data.rm<- data[-c(17,18,21),]
 
 Definition of the different linear models
 
-```{r}
 
-fit.svwty= lm (`rate of advance` ~ variety+strain+weight+temperature+year, data=data)
 
-```
-
-```{r}
-summary(fit.svwty)
-anova(fit.svwty)
-```
-
-Only strains and temperature are significative, radius to some extent.
-#TODO : chose if we want to keep it in that format
 
 ##Stepwise selection of variables
 ```{r}
-
-fit.step <- step(lm(`rate of advance` ~ variety+strain+weight+temperature+year, data=data)) 
 fit.stepAIC <- stepAIC(lm(`rate of advance` ~ variety+strain+weight+temperature+year, data=data))
 ```
 
-#TODO : choose if we want to keep both or not ?
+
+#TODO : not show above, only that year was removed (and show further that coeffs are roughly the same)
 
 
 ```{r}
-summary(fit.step)
-summary(fit.stepAIC)
+fit.stepAIC
 ```
 
 
 #Interpretation
 
 ```{r}
-for (k in 1:6) {
+for (k in c(4)) {
   plot(fit.stepAIC, which=k)
 }
 ```
 
 
+#If enough space, add some elements to compare the models
 ```{r}
-data[7:12,]
-```
-#TODO : analyse the outliers
-18, 19, 21? 
-
-
-```{r}
-fit.rm.stepAIC <- stepAIC(lm(`rate of advance` ~ variety+strain+weight+temperature+year, data=data.rm))
+fit.rm.stepAIC <- stepAIC(lm(`rate of advance` ~ variety+strain+weight+temperature, data=data.rm))
+fit.rm.stepAICfull <- stepAIC(lm(`rate of advance` ~ variety+strain+weight+temperature+year, data=data.rm))
 summary(fit.rm.stepAIC)
 
-for (k in 1:6) {
+```
+```{r}
+
+for (k in c(1,2)) {
   plot(fit.rm.stepAIC, which=k)
 }
-
 ```
 
-
-
-
-####Interactions 
-```{r}
-interaction.plot(data$strain, data$variety, data$'rate of advance' )
-
-
-```
-
-Interaction entre variety et strain !
-
+#TODO : interpret the model, explain the outliers 
+#TODO : explain here why we don't fit the full model (remove year) : coherent with full data (with outliers)
 
 ```{r}
-fit.inter1 <- aov(`rate of advance` ~ strain*variety, data=data)
-summary(fit.inter1)
-```
-```{r}
-fit.inter2 <- aov(`rate of advance` ~ variety*strain, data=data)
-summary(fit.inter2)
+anova(fit.rm.stepAIC,fit.rm.stepAICfull)
 ```
 
-Interaction not strong enough to be relevant.
 
-
-#Foster differences
-
-```{r}
-foster.hsd <- TukeyHSD(fit.inter1, "strain")
-plot(foster.hsd)
-```
-
-Confirmation : interaction not relevant.
 
 
 ### Verify model fit : residuals
 
-```{r}
-#Old plots
-
-par(mfrow = c(1,3), adj = 0.5)
-plot(data$days, residuals(fit.s))
-title(('residuals of fit.s versus days'))
-plot(data$days, residuals(fit.v))
-title(('residuals of fit.v versus days'))
-plot(data$days, residuals(fit.sv))
-title(('residuals of fit.sv versus days'))
-
-par(mfrow = c(1,3), adj = 0.5)
-plot(data$weight, residuals(fit.s))
-title(('residuals of fit.s versus weight'))
-plot(data$weight, residuals(fit.v))
-title(('residuals of fit.v versus weight'))
-plot(data$weight, residuals(fit.sv))
-title(('residuals of fit.sv versus weight'))
-
-
-```
 
 
 
-```{r}
-#general plots
-plot(residuals(fit.sdt))
-qq<-qqnorm(residuals(fit.sdt))
-stem(residuals(fit.sdt))
-plot(fit.sdt)
-```
 
-Seems good.
+
 
 ##Check for time dependencies (Thibault)
 
 test time dependence of rate of advance 
 ```{r}
-par(pty="m")
-layout(matrix(1:8, nrow = 2))
-data.s1 <-subset(data, strain ==1)
-data.s2 <-subset(data, strain ==2)
-data.s3 <-subset(data, strain ==3)
-data.s4 <-subset(data, strain ==4)
-data.s5 <-subset(data, strain ==5)
-data.s6 <-subset(data, strain ==6)
-data.s7 <-subset(data, strain ==7)
-plot(x = data.s1$days, data.s1$`rate of advance`)
-title("strain 1 = f(t)")
-plot(x = data.s2$days, data.s2$`rate of advance`)
-title("strain 2 = f(t)")
-plot(x = data.s3$days, data.s3$`rate of advance`)
-title("strain 3 = f(t)")
-plot(x = data.s4$days, data.s4$`rate of advance`)
-title("strain 4 = f(t)")
-plot(x = data.s5$days, data.s5$`rate of advance`)
-title("strain 5 = f(t)")
-plot(x = data.s6$days, data.s6$`rate of advance`)
-title("strain 6 = f(t)")
-plot(x = data.s7$days, data.s7$`rate of advance`)
-title("strain 7 = f(t)")
-layout(1)
-plot(x=data$days, y= residuals(fit.stepAIC))
+
+plot(x=data.rm$days, y= residuals(fit.rm.stepAIC))
 title("residuals= f(days)")
-fit.confirm <- lm(residuals(fit.stepAIC)~data$days)
-summary(fit.confirm)
 ```
 
-Ajouter days ne semble pas significatif. 
+Homoscedasticity among all groups
 
 
-
-idem for radial advance
-```{r}
-par(pty="m")
-layout(matrix(1:4, nrow = 2))
-data.s1 <-subset(data, strain ==1)
-data.s2 <-subset(data, strain ==2)
-data.s3 <-subset(data, strain ==3)
-data.s4 <-subset(data, strain ==4)
-data.s5 <-subset(data, strain ==5)
-data.s6 <-subset(data, strain ==6)
-data.s7 <-subset(data, strain ==7)
-plot(x = data.s1$days, data.s1$`fungal radial advance`)
-title("strain 1 = f(t)")
-plot(x = data.s2$days, data.s2$`fungal radial advance`)
-title("strain 2 = f(t)")
-plot(x = data.s3$days, data.s3$`fungal radial advance`)
-title("strain 3 = f(t)")
-plot(x = data.s4$days, data.s4$`fungal radial advance`)
-title("strain 4 = f(t)")
-plot(x = data.s5$days, data.s5$`fungal radial advance`)
-title("strain 5 = f(t)")
-plot(x = data.s6$days, data.s6$`fungal radial advance`)
-title("strain 6 = f(t)")
-plot(x = data.s7$days, data.s7$`fungal radial advance`)
-title("strain 7 = f(t)")
-```
+#Discussion / Results (short)
 
 
 ###Conclusion
-
+#TODO : finish it
 The most impactant variable is the day of the infection : the infection is strongest (progresses more rapidly) when the apple is infected early.
 (Pas tres sure de comment interpreter ça ?)
 
@@ -394,5 +231,16 @@ The strains B (strains 2 and 3) are very less virulent.
 
 Finally, low temperature leads to more resistance of the apple.
 
+#Question to the teacher
+Is our method ok or only ANOVA ?
+Do you validate the part when we remove year ? 
+
+
+#R�partition
+
+Corr�lations + Conclusion : Thibault 
+EDA sauf corr�lations : Audrey 
+Fit du model : Eloi
+Residuals + discussion : Auriane
 
 
