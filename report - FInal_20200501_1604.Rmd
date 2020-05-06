@@ -21,7 +21,7 @@ df_print: paged
 
 #Import and loading data
 
-Introduction
+# Introduction
 Apples are among the best-preserved fruits. However, after a while fungi strains are inevitably starting to grow. In F.G. Gregory and A.S.Horne study, the conditions of infection, the progression of the invasion and the final stage of invasion were studied for two varieties of apple : the Cox’s Orange Pippin from Burwell, Cambridgeshire and Bramley’s seeding from 6 different localities. The dataset contains the variety of apple. the fusarium strains, they day at which the apples have been infected, the temperature of storage of the apples, the apple weight, the apple radius, the fungal radial advance and the rate of advance. The aim of our study is to compare the infecting power depending on the conditions of infection (strain of fusarium, day of infection and storage temperature) and the resistance to invasion of different varieties of apples and their characteristics (weight and radius).
 
 ```{r, echo=FALSE}
@@ -33,6 +33,21 @@ require(MASS)
 data <-read.table("http://users.stat.ufl.edu/~winner/data/apple1.dat")
 colnames(data) <- c("variety", "strain", "days", "weight", "radius", "fungal radial advance", "rate of advance")
 ```
+# Exploratory Data Analysis
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 We add some meta data, that are under the general "strain" variable
 ```{r}
