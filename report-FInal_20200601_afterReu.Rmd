@@ -1,0 +1,253 @@
+---
+title: "Project A1 : Fungal invasion of the Apple fruit"
+author: "Auriane Cozic, Thibault de La Taille, Eloi Littner, Audrey Menaesse"
+date: "May 1st, 2020"
+output: 
+  pdf_document:
+    df_print: paged
+geometry: margin=2.5cm
+fontsize: 12pt
+df_print: paged
+---
+
+
+
+#Introduction
+
+Apples are among the best-preserved fruits. However, after a while fungi strains are inevitably starting to grow. In F.G. Gregory and A.S.Horne study, the conditions of infection, the progression of the invasion and the final stage of invasion were studied for two varieties of apple : the Cox’s Orange Pippin from Burwell, Cambridgeshire and Bramley’s seeding from 6 different localities. The dataset contains the variety of apple, the fusarium strains, they day at which the apples have been infected, the temperature of storage of the apples, the apple weight, the apple radius, the fungal radial advance and the rate of advance. The aim of our study is to compare the infecting power depending on the conditions of infection (strain of fusarium, day of infection and storage temperature) and the resistance to invasion of different varieties of apples and their characteristics (weight and radius).
+
+
+
+#Import and loading data
+
+
+```{r, echo=FALSE}
+#Load libraries and packages
+require(MASS)
+```
+
+```{r}
+data <-read.table("http://users.stat.ufl.edu/~winner/data/apple1.dat")
+colnames(data) <- c("variety", "strain", "days", "weight", "radius", "fungal radial advance", "rate of advance")
+```
+
+#Data description
+
+The data set under study describes the fungal invasion of 35 apples. It contains 7 different variables :
+  - characteristics of the apple (variety, weight, radius)
+  - strain of the fungi
+  - measurements of the infection (days after infection, fungal radial advance, rate of fungal advance)
+
+The variable variety contained more metadata information. It was split and 2 other variables were added : year and temperature of the experiment.
+
+```{r}
+data$variety[data$variety <= 2]<-"Bramley"
+data$variety[data$variety <= 5]<-"Cox"
+
+data$year = 1924
+data$year[data$days == 70] <- 1925
+data$year[data$days == 86] <- 1925
+
+data$temperature<-12
+data$temperature[data$days == 138]<-3
+
+data$variety <- as.factor(data$variety)
+data$strain <- as.factor(data$strain)
+data$year <- as.factor(data$year) 
+data$temperature<- as.factor(data$temperature)
+
+```
+
+The study is looking at 2 different varieties of apples and 7 fungi strains. It comes from 5 different experiments started in 1924 or 1925. 4 of them were performed at the same temperature (12°), but one was at 3°. The duration between the infection and the measurements is different for each experiment.
+
+
+#Outliers
+
+Exploring the data, 3 outliers can be detected.
+The Cox apples 18 and 21 have a fungal radial advance superior to the apple radius. As it does not have any physical sense or meaningful explanation, they were removed.
+The infection did not develop in one apple (17). The fungal radial advance is very lower to any other apple. As it the only case, it reveals an experimental error and was removed.
+
+ 
+```{r}
+data.rm<- data[-c(17,18,21),]
+```
+
+
+
+#Correlations -> remove days and radius ; consider only rate of advance (not radius) 
+#TODO : replace data by data.rm and rerun 
+
+
+
+Explore correlations and colinearity: 
+```{r}
+pairs(data[c("days", "weight", "radius", "fungal radial advance", "rate of advance")])
+#cov(data[c("days", "weight", "radius", "fungal radial advance", "rate of advance")])
+cor(data[c("weight", "radius", "fungal radial advance", "rate of advance")])
+
+
+#plot(x = data$days, y=data$year)
+require('ggplot2')
+layout(matrix(1:3, ncol=3))
+qplot(data$days,data$year)
+qplot(data$days,data$temperature)
+qplot(data$days,data$variety)
+
+# ""
+# "corrected correlations"
+# ""
+# 
+# p.cor<-function(x){
+#   inv<-solve(var(x))
+#   sdi<-diag(1/sqrt(diag(inv)))
+#   p.cor.mat<--(sdi%*%inv%*%sdi)
+#   diag(p.cor.mat)<-1
+#   rownames(p.cor.mat)<-colnames(p.cor.mat)<-colnames(x)
+#   return(p.cor.mat)}
+# #p.cor(data[c("strain","days", "weight", "radius","temperature", "fungal radial advance", "rate of advance", "year")])
+```
+#TODO : virer le matrix plot, et voir si on a la place de mettre les trois graphs de la fin, sinon les t?j et mettre une phrase. Move to supplementary 
+On voit bien une forte corrélation entre "weight" et "radius" sur le 1er graphe, ce qui est confirmé par les coefficients de corrélation; de même entre "rate of advance" et "fungal radial advance". 
+Cela est bien cohérent en fonction des méthodes de calcul liant les 2 respectivement (avec approximation pour weight). 
+
+De plus, en observant les relations entre "days" et les autres facteurs ("year", "temperature" et "variety", d'où sont extraites ces informations), il apparaît que "days" contient toutes ces facteurs, mais de manière non linéaire; et est donc à exclure car risquant de fausser l'analyse sans gain d'information.
+
+
+#Exploratory data analysis 
+
+```{r}
+plot.design(x=data.rm$`rate of advance`~.,data=data.rm[,c(1,2,7,8,9)], ylab= 'Rate of fungal advance')
+
+```
+#TODO : make the graph more pretty 
+
+```{r}
+boxplot(data$`rate of advance`~data$variety, ylab='Fungal rate of advance')
+boxplot(data$`rate of advance`~data$strain, ylab='Fungal rate of advance')
+boxplot(data$`rate of advance`~data$temperature, ylab='Fungal rate of advance')
+boxplot(data$`rate of advance`~data$year, ylab='Fungal rate of advance')
+```
+
+
+
+#TODO : comment more on these graphs. Say that we show them because seems to be a difference in the last plot. Check if enough space for both graphs ore only first or second ?
+
+
+#TODO : move this comment to the appropriate location
+We can see that the variance of rate of advance is very dependent on the experiment (on the variety and strain especially).
+We can see about the mean of rate of advance and of fungal radius :
+ - strain 3, and also 2 and 1 lower
+ - variety 3 higher
+ (see more below)
+
+```{r}
+plot(data.rm$weight, data.rm$`rate of advance`)
+```
+#TODO : interpret this graph. Remove the graph end say just a sentence about it. 
+
+
+#TODO : check homscedasticity ? (if enough space)
+
+
+
+
+
+####Model selection
+
+Definition of the different linear models
+
+
+
+
+##Stepwise selection of variables
+```{r}
+fit.stepAIC <- stepAIC(lm(`rate of advance` ~ variety+strain+weight+temperature+year, data=data))
+```
+
+
+#TODO : not show above, only that year was removed (and show further that coeffs are roughly the same)
+
+
+```{r}
+fit.stepAIC
+```
+
+
+#Interpretation
+
+```{r}
+for (k in c(4)) {
+  plot(fit.stepAIC, which=k)
+}
+```
+
+
+#If enough space, add some elements to compare the models
+```{r}
+fit.rm.stepAIC <- stepAIC(lm(`rate of advance` ~ variety+strain+weight+temperature, data=data.rm))
+fit.rm.stepAICfull <- stepAIC(lm(`rate of advance` ~ variety+strain+weight+temperature+year, data=data.rm))
+summary(fit.rm.stepAIC)
+
+```
+```{r}
+
+for (k in c(1,2)) {
+  plot(fit.rm.stepAIC, which=k)
+}
+```
+
+#TODO : interpret the model, explain the outliers 
+#TODO : explain here why we don't fit the full model (remove year) : coherent with full data (with outliers)
+
+```{r}
+anova(fit.rm.stepAIC,fit.rm.stepAICfull)
+```
+
+
+
+
+### Verify model fit : residuals
+
+
+
+
+
+
+
+##Check for time dependencies (Thibault)
+
+test time dependence of rate of advance 
+```{r}
+
+plot(x=data.rm$days, y= residuals(fit.rm.stepAIC))
+title("residuals= f(days)")
+```
+
+Homoscedasticity among all groups
+
+
+#Discussion / Results (short)
+
+
+###Conclusion
+#TODO : finish it
+The most impactant variable is the day of the infection : the infection is strongest (progresses more rapidly) when the apple is infected early.
+(Pas tres sure de comment interpreter ça ?)
+
+The strains B (strains 2 and 3) are very less virulent.
+
+Finally, low temperature leads to more resistance of the apple.
+
+#Question to the teacher
+Is our method ok or only ANOVA ?
+Do you validate the part when we remove year ? 
+
+
+#R?partition
+
+Corr?lations + Conclusion : Thibault 
+EDA sauf corr?lations : Audrey 
+Fit du model : Eloi
+Residuals + discussion : Auriane
+
+
