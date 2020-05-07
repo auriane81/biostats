@@ -24,6 +24,8 @@ Apples are among the best-preserved fruits. However, after a while fungi strains
 ```{r, echo=FALSE}
 #Load libraries and packages
 require(MASS)
+library(ggplot2)
+library(plotrix)
 ```
 
 ```{r}
@@ -33,9 +35,9 @@ colnames(data) <- c("variety", "strain", "days", "weight", "radius", "fungal rad
 
 #Data description
 
-The data set under study describes the fungal invasion of 35 apples. It contains 7 different variables :
+The data set under study describes the fungal invasion of 35 apples. It contains 7 different variables, regarding:
   - characteristics of the apple (variety, weight, radius)
-  - strain of the fungi
+  - strain of the fungi, separated in 4 types (A, B, C and D)
   - measurements of the infection (days after infection, fungal radial advance, rate of fungal advance)
 
 The variable variety contained more metadata information. It was split and 2 other variables were added : year and temperature of the experiment.
@@ -115,41 +117,50 @@ De plus, en observant les relations entre "days" et les autres facteurs ("year",
 
 #Exploratory data analysis 
 
-```{r}
-plot.design(x=data.rm$`rate of advance`~.,data=data.rm[,c(1,2,7,8,9)], ylab= 'Rate of fungal advance')
+```{r, fig.width=6, fig.height=4}
+
+plot.design(x=data.rm$`rate of advance`~.,data=data.rm[,c(1,2,7,8,9)], ylab= 'Rate of fungal advance (cm/day)', main = "Univariate effects of factors", cex=0.7, cex.lab=0.8 ,cex.axis=0.8, cex.main=0.8, cex.sub=0.8)
+#cex changes font size within the graph to prevent overlaps
 
 ```
-#TODO : make the graph more pretty 
+The strain, temperature and year seem to have a strong influcence on the rate of fungal advance, while the variety has low impact. 
+
+###if enough space, graphs
+This can be confirmed by looking at the data points
 
 ```{r}
-boxplot(data$`rate of advance`~data$variety, ylab='Fungal rate of advance')
-boxplot(data$`rate of advance`~data$strain, ylab='Fungal rate of advance')
-boxplot(data$`rate of advance`~data$temperature, ylab='Fungal rate of advance')
-boxplot(data$`rate of advance`~data$year, ylab='Fungal rate of advance')
+par(mfrow=c(2,2))
+bp1 <- boxplot(data.rm$`rate of advance`~data.rm$variety, ylab='Fungal rate of advance (cm/day)', xlab = "Variety")
+text(bp1$group, bp1$out, rownames(data.rm[data.rm$`rate of advance` %in% bp1$out,]),pos = 4, cex=0.7) #label the outliers
+bp2 <- boxplot(data.rm$`rate of advance`~data.rm$strain, ylab='Fungal rate of advance (cm/day)', xlab = "Fungal strain")
+text(bp2$group, bp2$out, rownames(data.rm[data.rm$`rate of advance` %in% bp2$out,]),pos = 4, cex=0.7)
+bp3 <- boxplot(data.rm$`rate of advance`~data.rm$temperature, ylab='Fungal rate of advance (cm/day)', xlab = "Temperature (°)")
+text(bp3$group, bp3$out, rownames(data.rm[data.rm$`rate of advance` %in% bp3$out,]),pos = 4, cex=0.7)
+bp4 <- boxplot(data.rm$`rate of advance`~data.rm$year, ylab='Fungal rate of advance (cm/day)', xlab = "Year")
+text(bp4$group, bp4$out, rownames(data.rm[data.rm$`rate of advance` %in% bp4$out,]),pos = 4, cex=0.7)
+```
+
+The fungi strains of type V (2 and 3), and a cold temperature, seem to have a reduced infecting power.
+It can also be noticed that Cox variety, fungi strain 1, 12° temperature and year 1924 experiments display higher variability, which is confirmed by their standard deviations. This is due to the fact that each of these categories gather only few data (less than 5). Any generalisation of the results is thus complicated.
+
+
+##Do not show
+```{r, include=False}
+
+tapply(data.rm$`rate of advance`, list(data.rm$strain), sd)
+tapply(data.rm$`rate of advance`, list(data.rm$variety), sd)
+tapply(data.rm$`rate of advance`, list(data.rm$year), sd)
+tapply(data.rm$`rate of advance`, list(data.rm$temperature), sd)
 ```
 
 
+3 outliers apples stand out having particularly high Fungal rate of advance (15, 19 and 20), and one has a slightly lower one (10).
 
-#TODO : comment more on these graphs. Say that we show them because seems to be a difference in the last plot. Check if enough space for both graphs ore only first or second ?
-
-
-#TODO : move this comment to the appropriate location
-We can see that the variance of rate of advance is very dependent on the experiment (on the variety and strain especially).
-We can see about the mean of rate of advance and of fungal radius :
- - strain 3, and also 2 and 1 lower
- - variety 3 higher
- (see more below)
-
+###graph only if enough space
 ```{r}
-plot(data.rm$weight, data.rm$`rate of advance`)
+plot(data.rm$weight, data.rm$`rate of advance`, xlab = "Weight (g)", ylab = "Rate of fungal advance (cm/day)", main = "Effect of the apple weight on the infection")
 ```
-#TODO : interpret this graph. Remove the graph end say just a sentence about it. 
-
-
-#TODO : check homscedasticity ? (if enough space)
-
-
-
+Finally, we can not see any pattern on the rate of fungal advance depending on the weight, neither abnormal variability. 
 
 
 ####Model selection
