@@ -1,6 +1,6 @@
 ---
 title: "Project A1 : Fungal invasion of the Apple fruit"
-author: "Auriane Cozic, Thibault de La Taille, Eloi Littner, Audrey Ménaësse"
+author: "Auriane Cozic, Thibault de La Taille, Eloi Littner, Audrey Menaesse"
 date: "May 1st, 2020"
 output: 
   pdf_document:
@@ -13,10 +13,12 @@ header-includes:
 - \usepackage{float}
 - \usepackage{fancyhdr}
 - \usepackage{wrapfig, subfig}
+- \usepackage{bbm}
 - \pagestyle{fancy}
-- \fancyhead[C]{Cozic, De La Taille, Littner, Ménaësse}
+- \fancyhead[C]{Cozic, De La Taille, Littner, Menaesse}
 - \fancyhead[L]{}
 - \fancyhead[R]{}
+
 ---
 
 
@@ -37,9 +39,11 @@ The aim of our study is to compare the infecting power depending on the conditio
 
 ```{r, include=FALSE}
 #Load libraries and packages
-require(MASS)
+library(MASS)
 library(ggplot2)
 library(plotrix)
+library(knitr)
+library(xtable)
 ```
 
 ```{r, include=FALSE}
@@ -92,7 +96,7 @@ data.rm<- data[-c(17,18,21),]
 
 
 Explore correlations and colinearity: 
-```{r}
+```{r,echo=FALSE}
 pairs(data[c("days", "weight", "radius", "fungal radial advance", "rate of advance")])
 #cov(data[c("days", "weight", "radius", "fungal radial advance", "rate of advance")])
 cor(data[c("weight", "radius", "fungal radial advance", "rate of advance")])
@@ -124,7 +128,7 @@ De plus, en observant les relations entre "days" et les autres facteurs ("year",
 
 #Exploratory data analysis 
 
-```{r, fig.width=6, fig.height=4}
+```{r, fig.width=6, fig.height=4,echo=FALSE}
 plot.design(x=data.rm$`rate of advance`~.,data=data.rm[,c(1,2,7,8,9)], ylab= 'Rate of fungal advance (cm/day)', main = "Univariate effects of factors", cex=0.7, cex.lab=0.8 ,cex.axis=0.8, cex.main=0.8, cex.sub=0.8)
 #cex changes font size within the graph to prevent overlaps
 ```
@@ -133,7 +137,7 @@ The strain, temperature and year seem to have a strong influcence on the rate of
 ###if enough space, graphs
 This can be confirmed by looking at the data points
 
-```{r}
+```{r,echo=FALSE}
 par(mfrow=c(2,2))
 bp1 <- boxplot(data.rm$`rate of advance`~data.rm$variety, ylab='Fungal rate of advance (cm/day)', xlab = "Variety")
 text(bp1$group, bp1$out, rownames(data.rm[data.rm$`rate of advance` %in% bp1$out,]),pos = 4, cex=0.7) #label the outliers
@@ -161,56 +165,48 @@ tapply(data.rm$`rate of advance`, list(data.rm$temperature), sd)
 3 outliers apples stand out having particularly high Fungal rate of advance (15, 19 and 20), and one has a slightly lower one (10).
 
 ###graph only if enough space
-```{r}
+```{r,echo=FALSE}
 plot(data.rm$weight, data.rm$`rate of advance`, xlab = "Weight (g)", ylab = "Rate of fungal advance (cm/day)", main = "Effect of the apple weight on the infection")
 ```
 Finally, we can not see any abnormal variability regarding the rate of fungal advance depending on the weight. 
 
 
-####Model selection
+#Infection modeling
+##Full data 
+The exploratory data analysis enabled us to disentangle the non-redundant, independent, parameters for modeling the progression of fungal infection in the apple.
+More precisely, we identified the infection rate of advance as the most reliable reporter of the infection strength and the variety, \textit{Fusarium} strain, apple weight, storage temperature and year of experiment as potential explanatory variables. 
 
-Definition of the different linear models
+To select the most meaningful variables, we first fitted a full linear model, using all the independent parameters cited above. Then, we used the stepwise AIC (Akaike information criterion) method for model selection. This method serially checks if deleting or adding a variable to the model improves its AIC score until a minimum is reached : the lower the AIC score, the better the model.
 
+This method, when applied on the full data (with the outliers) yielded the following model with AIC score -317.68 : $$RateOfAdvance = \beta_0 + \beta_1.weight + \beta_2. \mathbbm{1}_{variety=Cox} +  \beta_3. \mathbbm{1}_{temperature=12} + \sum_{i=2}^{7}{\beta_{4,i}. \mathbbm{1}_{strain = i}} ~~(\textasteriskcentered{})$$
 
+Only "year" was removed from the explanatory variables, showing that no seasonality effect can be inferred from the data. Looking at the Cook's distance diagnostic plot confirmed the fact that samples 18 and 21, previously identified as non-sense data, have a strong influence on the model. Hence, we decided to do a further stepwise model selection using filtered data as described in the explanatory data analysis.
 
-
-##Stepwise selection of variables
-```{r}
+##Data without outliers
+```{r,include=FALSE}
 fit.stepAIC <- stepAIC(lm(`rate of advance` ~ variety+strain+weight+temperature+year, data=data))
-```
 
-
-#TODO : not show above, only that year was removed (and show further that coeffs are roughly the same)
-
-
-```{r}
 fit.stepAIC
+
 ```
 
-
-#Interpretation
-
-```{r,include=F}
-for (k in c(4)) {
-  plot(fit.stepAIC, which=k)
-}
-```
-
-
-#If enough space, add some elements to compare the models
-```{r, include=F}
+This time, the final model also included the variable "year", but with a tremendously high p-value $(Pr(>|t|) = 0.21363)$. To remain consistent with the model obtained when the whole dataset was used, we chose to run a final stepwise model selection without the "year" variable. Removing "year" did not change fundamentally the obtained AIC (-303.1 instead of -303.52 when "year" was included) and even slightly reduced the model's global p-value (0.002044 instead of 0.002403). Furthermore, an ANOVA of the two models yielded no significancy for the addition of year. Our final model is then also described by (\textasteriskcentered{}), with the following parameter values. To gauge the consistence of our model and the influence of outliers, we added the parameter estimate when fitted on the full data (last column, "FullData"). No important change could be observed.
+```{r,include=FALSE}
 fit.rm.stepAIC <- stepAIC(lm(`rate of advance` ~ variety+strain+weight+temperature, data=data.rm))
 fit.rm.stepAICfull <- stepAIC(lm(`rate of advance` ~ variety+strain+weight+temperature+year, data=data.rm))
 summary(fit.rm.stepAIC)
+summary(fit.rm.stepAICfull)
+
 ```
 
 
-#TODO : interpret the model, explain the outliers 
-#TODO : explain here why we don't fit the full model (remove year) : coherent with full data (with outliers)
-
-```{r}
-anova(fit.rm.stepAIC,fit.rm.stepAICfull)
+```{r,echo=FALSE}
+params <- xtable(summary(fit.rm.stepAIC))
+params$FullData <- xtable(summary(fit.stepAIC))$Estimate
+kable(params,digits=4)
 ```
+
+
 
 
 
@@ -237,7 +233,7 @@ Based on these plots, we can confirm that the data set is then well represented 
 
 To check that the dataset is not biased, we verified that the variance is not dependent on the conditions of the experiment. Dependencies of the residuals on days were plotted, as \textit{days} variable differentiate the apples based on the experiment it was part of. 
 
-```{r}
+```{r,echo=FALSE}
 plot(x=data.rm$days, y= residuals(fit.rm.stepAIC))
 title("residuals= f(days)")
 ```
