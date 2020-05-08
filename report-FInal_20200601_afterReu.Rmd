@@ -1,6 +1,6 @@
 ---
 title: "Project A1 : Fungal invasion of the Apple fruit"
-author: "Auriane Cozic, Thibault de La Taille, Eloi Littner, Audrey Menaesse"
+author: "Auriane Cozic, Thibault de La Taille, Eloi Littner, Audrey Ménaësse"
 date: "May 1st, 2020"
 output: 
   pdf_document:
@@ -8,69 +8,80 @@ output:
 geometry: margin=2.5cm
 fontsize: 12pt
 df_print: paged
+
+header-includes:
+- \usepackage{float}
+- \usepackage{fancyhdr}
+- \usepackage{wrapfig, subfig}
+- \pagestyle{fancy}
+- \fancyhead[C]{Cozic, De La Taille, Littner, Ménaësse}
+- \fancyhead[L]{}
+- \fancyhead[R]{}
+
 ---
 
 
 
-#Introduction
+# Introduction
 
-Apples are among the best-preserved fruits. However, after a while fungi strains are inevitably starting to grow. In F.G. Gregory and A.S.Horne study, the conditions of infection, the progression of the invasion and the final stage of invasion were studied for two varieties of apple : the Cox’s Orange Pippin from Burwell, Cambridgeshire and Bramley’s seeding from 6 different localities. The dataset contains the variety of apple, the fusarium strains, they day at which the apples have been infected, the temperature of storage of the apples, the apple weight, the apple radius, the fungal radial advance and the rate of advance. The aim of our study is to compare the infecting power depending on the conditions of infection (strain of fusarium, day of infection and storage temperature) and the resistance to invasion of different varieties of apples and their characteristics (weight and radius).
+Apples are among the best-preserved fruits. However, after a while fungi strains are inevitably starting to grow. In F.G. Gregory and A.S.Horne study, the conditions of infection, the progression of the invasion and the final stage of invasion were studied for two varieties of apple : the Cox’s Orange Pippin from Burwell, Cambridgeshire and Bramley’s seeding from 6 different localities. The data set under study describes the fungal invasion of 35 apples. It contains 7 different variables, regarding:
+
+* the characteristics of the apple (variety, weight, radius)
+* the strain of the fungi, separated in 7 types (A, B11, B111, C1, C21, C3 and D)
+* the measurements of the infection (days after infection, fungal radial advance, rate of fungal advance).
+
+The aim of our study is to compare the infecting power depending on the conditions of infection and the resistance to invasion of different varieties of apples and their characteristics.
 
 
 
-#Import and loading data
 
 
-```{r, echo=FALSE}
+```{r, include=FALSE}
 #Load libraries and packages
 require(MASS)
 library(ggplot2)
 library(plotrix)
 ```
 
-```{r}
+```{r, include=FALSE}
 data <-read.table("http://users.stat.ufl.edu/~winner/data/apple1.dat")
 colnames(data) <- c("variety", "strain", "days", "weight", "radius", "fungal radial advance", "rate of advance")
 ```
 
-#Data description
+# Exploratory data analysis
+## Data description
 
-The data set under study describes the fungal invasion of 35 apples. It contains 7 different variables, regarding:
-  - characteristics of the apple (variety, weight, radius)
-  - strain of the fungi, separated in 4 types (A, B, C and D)
-  - measurements of the infection (days after infection, fungal radial advance, rate of fungal advance)
+To begin with, we want to get familiar with the data. The variable *variety* contains several metadata information. Therefore, in order to have explicit variables in our model, we decided to split it into two new variables : the year when the experiment was conducted and the storage temperature of the apples. 
 
-The variable variety contained more metadata information. It was split and 2 other variables were added : year and temperature of the experiment.
+The study is looking at 2 different varieties of apples and 7 fungi strains. It comes from 5 different experiments started in 1924 or 1925. 4 of them were performed at the same temperature (12°), but one was at (3°). The duration between the infection and the measurements is different for each experiment.
 
-```{r}
+
+
+```{r, include=FALSE}
 data$variety[data$variety <= 2]<-"Bramley"
 data$variety[data$variety <= 5]<-"Cox"
-
 data$year = 1924
 data$year[data$days == 70] <- 1925
 data$year[data$days == 86] <- 1925
-
 data$temperature<-12
 data$temperature[data$days == 138]<-3
-
 data$variety <- as.factor(data$variety)
 data$strain <- as.factor(data$strain)
 data$year <- as.factor(data$year) 
 data$temperature<- as.factor(data$temperature)
-
 ```
 
-The study is looking at 2 different varieties of apples and 7 fungi strains. It comes from 5 different experiments started in 1924 or 1925. 4 of them were performed at the same temperature (12°), but one was at 3°. The duration between the infection and the measurements is different for each experiment.
 
 
-#Outliers
+
+## Outliers
 
 Exploring the data, 3 outliers can be detected.
-The Cox apples 18 and 21 have a fungal radial advance superior to the apple radius. As it does not have any physical sense or meaningful explanation, they were removed.
-The infection did not develop in one apple (17). The fungal radial advance is very lower to any other apple. As it the only case, it reveals an experimental error and was removed.
+The Cox apples *18* and *21* have a fungal radial advance superior to the apple radius. As it does not have any physical sense or meaningful explanation, they were removed.
+The infection did not develop in one apple *17*. The fungal radial advance is very lower to any other apple. As it the only case, it reveals an experimental error and was also removed.
 
  
-```{r}
+```{r, include=FALSE}
 data.rm<- data[-c(17,18,21),]
 ```
 
@@ -86,15 +97,12 @@ Explore correlations and colinearity:
 pairs(data[c("days", "weight", "radius", "fungal radial advance", "rate of advance")])
 #cov(data[c("days", "weight", "radius", "fungal radial advance", "rate of advance")])
 cor(data[c("weight", "radius", "fungal radial advance", "rate of advance")])
-
-
 #plot(x = data$days, y=data$year)
 require('ggplot2')
 layout(matrix(1:3, ncol=3))
 qplot(data$days,data$year)
 qplot(data$days,data$temperature)
 qplot(data$days,data$variety)
-
 # ""
 # "corrected correlations"
 # ""
@@ -118,10 +126,8 @@ De plus, en observant les relations entre "days" et les autres facteurs ("year",
 #Exploratory data analysis 
 
 ```{r, fig.width=6, fig.height=4}
-
 plot.design(x=data.rm$`rate of advance`~.,data=data.rm[,c(1,2,7,8,9)], ylab= 'Rate of fungal advance (cm/day)', main = "Univariate effects of factors", cex=0.7, cex.lab=0.8 ,cex.axis=0.8, cex.main=0.8, cex.sub=0.8)
 #cex changes font size within the graph to prevent overlaps
-
 ```
 The strain, temperature and year seem to have a strong influcence on the rate of fungal advance, while the variety has low impact. 
 
@@ -145,8 +151,7 @@ It can also be noticed that Cox variety, fungi strain 1, 12° temperature and ye
 
 
 ##Do not show
-```{r, include=False}
-
+```{r, include=FALSE}
 tapply(data.rm$`rate of advance`, list(data.rm$strain), sd)
 tapply(data.rm$`rate of advance`, list(data.rm$variety), sd)
 tapply(data.rm$`rate of advance`, list(data.rm$year), sd)
@@ -186,7 +191,7 @@ fit.stepAIC
 
 #Interpretation
 
-```{r}
+```{r,include=F}
 for (k in c(4)) {
   plot(fit.stepAIC, which=k)
 }
@@ -194,18 +199,12 @@ for (k in c(4)) {
 
 
 #If enough space, add some elements to compare the models
-```{r}
+```{r, include=F}
 fit.rm.stepAIC <- stepAIC(lm(`rate of advance` ~ variety+strain+weight+temperature, data=data.rm))
 fit.rm.stepAICfull <- stepAIC(lm(`rate of advance` ~ variety+strain+weight+temperature+year, data=data.rm))
 summary(fit.rm.stepAIC)
-
 ```
-```{r}
 
-for (k in c(1,2)) {
-  plot(fit.rm.stepAIC, which=k)
-}
-```
 
 #TODO : interpret the model, explain the outliers 
 #TODO : explain here why we don't fit the full model (remove year) : coherent with full data (with outliers)
@@ -217,8 +216,17 @@ anova(fit.rm.stepAIC,fit.rm.stepAICfull)
 
 
 
-### Verify model fit : residuals
+# Assessment of the model
 
+In order to assess the model found previously, we first check the QQ-plot of the fitted data. 
+```{r echo = F, warning = F, message = F, fig.width=7, fig.height = 7, fig.cap = "Diagnostic plots", fig.subcap=c("\\label{fig:QQ}QQ-plot", "\\label{fig:residuals}Residuals"), fig.pos= "htbp", out.height="8cm", out.width=".8\\linewidth", fig.align="center"}
+ plot(fit.rm.stepAIC, which=2, xlab= 'Theoretical quantiles of the linear model', sub="") #QQ
+ plot(fit.rm.stepAIC, which=1, sub="")#residuals
+```
+
+The tail of residuals is composed of a very few data points which are significantly far from the model. The data set is then well represented by the linear model.
+
+The study of the residuals is also important to assess the model. Indeed, if the residuals are not carrying any information relevant to the model, their mean should be zero which is almost the case in the following plot.
 
 
 
@@ -229,7 +237,6 @@ anova(fit.rm.stepAIC,fit.rm.stepAICfull)
 
 test time dependence of rate of advance 
 ```{r}
-
 plot(x=data.rm$days, y= residuals(fit.rm.stepAIC))
 title("residuals= f(days)")
 ```
@@ -261,4 +268,4 @@ EDA sauf corr?lations : Audrey
 Fit du model : Eloi
 Residuals + discussion : Auriane
 
-
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
