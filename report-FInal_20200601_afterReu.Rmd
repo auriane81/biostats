@@ -44,6 +44,7 @@ library(ggplot2)
 library(plotrix)
 library(knitr)
 library(xtable)
+library(gridExtra)
 ```
 
 ```{r, include=FALSE}
@@ -89,41 +90,24 @@ data.rm<- data[-c(17,18,21),]
 ```
 
 
-
-#Correlations -> remove days and radius ; consider only rate of advance (not radius) 
-#TODO : replace data by data.rm and rerun 
-
+## Correlations and redundancy
+Then, we tried to identify correlations between variables prior to trying to model the infection power, as the presence of highly correlated explanatory variables would complexify the model without bringing any valuable information. After some exploration, we noticed that the apples' "weight" and their "radius" were highly correlated (based on Pearson's correlation coefficients), as shown below. This makes sense based on the physical relationship between these two, and we will hereafter ignore the "radius", as the apple "weight" would in our opinion be more reliable in an infection model. What's more, we can see a good correlation between the "fungal radial advance" and the "rate of advance", which is logical since the latter is computed by dividing the former by the number of "days" since infection; and since we are more interested in an infection power, independently of the time elapsed, we chose the "rate of advance" as our variable of interest and ignored the "fungal radial advance". 
 
 
-Explore correlations and colinearity: 
-```{r,echo=FALSE}
-pairs(data[c("days", "weight", "radius", "fungal radial advance", "rate of advance")])
-#cov(data[c("days", "weight", "radius", "fungal radial advance", "rate of advance")])
-cor(data[c("weight", "radius", "fungal radial advance", "rate of advance")])
-#plot(x = data$days, y=data$year)
-require('ggplot2')
-layout(matrix(1:3, ncol=3))
-qplot(data$days,data$year)
-qplot(data$days,data$temperature)
-qplot(data$days,data$variety)
-# ""
-# "corrected correlations"
-# ""
-# 
-# p.cor<-function(x){
-#   inv<-solve(var(x))
-#   sdi<-diag(1/sqrt(diag(inv)))
-#   p.cor.mat<--(sdi%*%inv%*%sdi)
-#   diag(p.cor.mat)<-1
-#   rownames(p.cor.mat)<-colnames(p.cor.mat)<-colnames(x)
-#   return(p.cor.mat)}
-# #p.cor(data[c("strain","days", "weight", "radius","temperature", "fungal radial advance", "rate of advance", "year")])
+```{r, echo=FALSE}
+kable(cor(data.rm[c("weight", "radius", "fungal radial advance", "rate of advance")]), digits = 2, caption = "Pearson's correlation coefficients")
+
 ```
-#TODO : virer le matrix plot, et voir si on a la place de mettre les trois graphs de la fin, sinon les t?j et mettre une phrase. Move to supplementary 
-On voit bien une forte corrélation entre "weight" et "radius" sur le 1er graphe, ce qui est confirmé par les coefficients de corrélation; de même entre "rate of advance" et "fungal radial advance". 
-Cela est bien cohérent en fonction des méthodes de calcul liant les 2 respectivement (avec approximation pour weight). 
 
-De plus, en observant les relations entre "days" et les autres facteurs ("year", "temperature" et "variety", d'où sont extraites ces informations), il apparaît que "days" contient toutes ces facteurs, mais de manière non linéaire; et est donc à exclure car risquant de fausser l'analyse sans gain d'information.
+
+```{r, echo=FALSE, fig.height=2}
+qplot1<-qplot(data.rm$days,data.rm$year, ylab = "Year", xlab = "Days", asp=1)
+qplot2<-qplot(data.rm$days,data.rm$temperature , ylab = "Temperature (°C)", xlab = "Days", asp = 0.93)
+qplot3<-qplot(data.rm$days,data.rm$variety, ylab = "Apple variety", xlab = "Days", asp = 1.12)
+grid.arrange(qplot1, qplot2, qplot3, nrow=1,top='Redundancy of "year"", "temperature" and "variety" in comparison to "days" post infection')
+
+```
+Furthermore, we can see that the factor "days" actually contains information on the "year", "temperature" and "apple variety" variables, which is coherent with how the different batches of apples were monitored. Because of that, we removed the "days" variable from our study as these correlated factors would affect our model.
 
 
 #Exploratory data analysis 
@@ -272,7 +256,7 @@ Is our method ok or only ANOVA ?
 Do you validate the part when we remove year ? 
 
 
-#R?partition
+#Répartition
 
 Corr?lations + Conclusion : Thibault 
 EDA sauf corr?lations : Audrey 
