@@ -17,7 +17,6 @@ header-includes:
 - \fancyhead[C]{Cozic, De La Taille, Littner, Ménaësse}
 - \fancyhead[L]{}
 - \fancyhead[R]{}
-
 ---
 
 
