@@ -146,7 +146,7 @@ text(bp4$group, bp4$out, rownames(data.rm[data.rm$`rate of advance` %in% bp4$out
 ```
 
 The fungi strains of type V (2 and 3), and a cold temperature, seem to have a reduced infecting power.
-It can also be noticed that Cox variety, fungi strain 1, 12° temperature and year 1924 experiments display higher variability, which is confirmed by their standard deviations. This is due to the fact that each of these categories gather only few data (less than 5). Any generalisation of the results is thus complicated.
+It can also be noticed that, fungi strain 1, 12° temperature and year 1924 experiments display higher variability, which is confirmed by their standard deviations. This is due to the fact that each of these categories gather only few data (less than 5). Any generalisation of the results is thus complicated.
 
 
 ##Do not show
@@ -164,7 +164,7 @@ tapply(data.rm$`rate of advance`, list(data.rm$temperature), sd)
 ```{r}
 plot(data.rm$weight, data.rm$`rate of advance`, xlab = "Weight (g)", ylab = "Rate of fungal advance (cm/day)", main = "Effect of the apple weight on the infection")
 ```
-Finally, we can not see any pattern on the rate of fungal advance depending on the weight, neither abnormal variability. 
+Finally, we can not see any abnormal variability regarding the rate of fungal advance depending on the weight. 
 
 
 ####Model selection
@@ -216,34 +216,50 @@ anova(fit.rm.stepAIC,fit.rm.stepAICfull)
 
 
 # Assessment of the model
+##Residuals
 
 In order to assess the model found previously, we first check the QQ-plot of the fitted data. 
 ```{r echo = F, warning = F, message = F, fig.width=7, fig.height = 7, fig.cap = "Diagnostic plots", fig.subcap=c("\\label{fig:QQ}QQ-plot", "\\label{fig:residuals}Residuals"), fig.pos= "htbp", out.height="8cm", out.width=".8\\linewidth", fig.align="center"}
+
+par(mfrow=c(2,1))
  plot(fit.rm.stepAIC, which=2, xlab= 'Theoretical quantiles of the linear model', sub="") #QQ
  plot(fit.rm.stepAIC, which=1, sub="")#residuals
 ```
 
-The tail of residuals is composed of a very few data points which are significantly far from the model. The data set is then well represented by the linear model.
+The tail of residuals is composed of a very few data points which are significantly far from the model. These two outliers (15 and 19) were already noticed during the exploratory data analysis, as having particularly advanced infection stage. 
 
-The study of the residuals is also important to assess the model. Indeed, if the residuals are not carrying any information relevant to the model, their mean should be zero which is almost the case in the following plot.
+The study of the residuals is also important to assess the model. Indeed, if the residuals are not carrying any information relevant to the model, their mean should be zero and no pattern should appear, which is the case in the following plot.
 
-
-
-
+Based on these plots, we can confirm that the data set is then well represented by the linear model.
 
 
-##Check for time dependencies (Thibault)
+##Homoscedasticity
 
-test time dependence of rate of advance 
+To check that the dataset is not biased, we verified that the variance is not dependent on the conditions of the experiment. Dependencies of the residuals on days were plotted, as \textit{days} variable differentiate the apples based on the experiment it was part of. 
+
 ```{r}
 plot(x=data.rm$days, y= residuals(fit.rm.stepAIC))
 title("residuals= f(days)")
 ```
 
-Homoscedasticity among all groups
+No pattern can be observed on the graph, which confirms the homoscedasticity of the dataset.
 
 
 #Discussion / Results (short)
+
+We have identified 4 characteristics influencing the course of infection.
+
+*Variety of the apple.* Infection progressed more slowly in Cox apples than in Bramley apples. This reveals that they have different resistance to the fungal invasion and that one should prefer Cox’s Orange Pippin than Bramley’s seeding to avoid infections in its fruits.
+
+*Strain of the fungi* The fungi strain influenced the rate of fungal advance. Especially, the two B strains (B11 and B111) are less invasive than all others.Different fungi strain can thus have different infecting power.
+
+*Temperature* Some environmental conditions play a role in infection, as the temperature. Very cold temperature (3°) delays the course of infection, compared to cold temperatures (12°). However, only one experiment was conducted at 3° with 7 apples. This represents very few amount of data, which explains the high variance associated. It is thus difficult to affirm any generalities about the ideal temperature, but we can assess that this variable has a significative impact.
+
+*Weight of the apple* The weight of the apple, and by extension its size has some impact on the speed of the infection. The heavier, the more rapidly the infection progresses. IHowever, this influence is moderate. We suggest it is due to the fact that the infection is less limited by the boundary conditions, and that this variable is not related to the resistance of the apple itself.
+
+
+The variable year is not relevant to explain the infection power. This means that the experiments were reproducible, and support the affirmation that the dataset is unbiased.
+
 
 
 ###Conclusion
