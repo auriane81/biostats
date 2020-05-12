@@ -22,6 +22,13 @@ header-includes:
 ---
 
 
+```{r, include=FALSE}
+
+options(tinytex.verbose = TRUE)
+
+```
+
+
 
 # Introduction
 
@@ -110,7 +117,7 @@ grid.arrange(qplot1, qplot2, qplot3, nrow=1,top='Redundancy of "year"", "tempera
 Furthermore, we can see that the factor "days" actually contains information on the "year", "temperature" and "apple variety" variables, which is coherent with how the different batches of apples were monitored. Because of that, we removed the "days" variable from our study as these correlated factors would affect our model.
 
 
-#Exploratory data analysis 
+# Overview of the data
 
 ```{r, fig.width=6, fig.height=4,echo=FALSE}
 plot.design(x=data.rm$`rate of advance`~.,data=data.rm[,c(1,2,7,8,9)], ylab= 'Rate of fungal advance (cm/day)', main = "Univariate effects of factors", cex=0.7, cex.lab=0.8 ,cex.axis=0.8, cex.main=0.8, cex.sub=0.8)
@@ -118,7 +125,7 @@ plot.design(x=data.rm$`rate of advance`~.,data=data.rm[,c(1,2,7,8,9)], ylab= 'Ra
 ```
 The strain, temperature and year seem to have a strong influcence on the rate of fungal advance, while the variety has low impact. 
 
-###if enough space, graphs
+##if enough space, graphs.  
 This can be confirmed by looking at the data points
 
 ```{r,echo=FALSE}
@@ -137,7 +144,7 @@ The fungi strains of type V (2 and 3), and a cold temperature, seem to have a re
 It can also be noticed that, fungi strain 1, 12° temperature and year 1924 experiments display higher variability, which is confirmed by their standard deviations. This is due to the fact that each of these categories gather only few data (less than 5). Any generalisation of the results is thus complicated.
 
 
-##Do not show
+<!-- Do not show -->
 ```{r, include=FALSE}
 tapply(data.rm$`rate of advance`, list(data.rm$strain), sd)
 tapply(data.rm$`rate of advance`, list(data.rm$variety), sd)
@@ -148,15 +155,18 @@ tapply(data.rm$`rate of advance`, list(data.rm$temperature), sd)
 
 3 outliers apples stand out having particularly high Fungal rate of advance (15, 19 and 20), and one has a slightly lower one (10).
 
-###graph only if enough space
+##graph only if enough space
+
 ```{r,echo=FALSE}
 plot(data.rm$weight, data.rm$`rate of advance`, xlab = "Weight (g)", ylab = "Rate of fungal advance (cm/day)", main = "Effect of the apple weight on the infection")
 ```
+
 Finally, we can not see any abnormal variability regarding the rate of fungal advance depending on the weight. 
 
 
-#Infection modeling
-##Full data 
+# Infection modeling
+## Full data 
+
 The exploratory data analysis enabled us to disentangle the non-redundant, independent, parameters for modeling the progression of fungal infection in the apple.
 More precisely, we identified the infection rate of advance as the most reliable reporter of the infection strength and the variety, \textit{Fusarium} strain, apple weight, storage temperature and year of experiment as potential explanatory variables. 
 
@@ -166,7 +176,7 @@ This method, when applied on the full data (with the outliers) yielded the follo
 
 Only "year" was removed from the explanatory variables, showing that no seasonality effect can be inferred from the data. Looking at the Cook's distance diagnostic plot confirmed the fact that samples 18 and 21, previously identified as non-sense data, have a strong influence on the model. Hence, we decided to do a further stepwise model selection using filtered data as described in the explanatory data analysis.
 
-##Data without outliers
+## Data without outliers
 ```{r,include=FALSE}
 fit.stepAIC <- stepAIC(lm(`rate of advance` ~ variety+strain+weight+temperature+year, data=data))
 
@@ -196,7 +206,7 @@ kable(params,digits=4)
 
 
 # Assessment of the model
-##Residuals
+## Residuals
 
 In order to assess the model found previously, we first check the QQ-plot of the fitted data. 
 ```{r echo = F, warning = F, message = F, fig.width=7, fig.height = 7, fig.cap = "Diagnostic plots", fig.subcap=c("\\label{fig:QQ}QQ-plot", "\\label{fig:residuals}Residuals"), fig.pos= "htbp", out.height="8cm", out.width=".8\\linewidth", fig.align="center"}
@@ -213,7 +223,7 @@ The study of the residuals is also important to assess the model. Indeed, if the
 Based on these plots, we can confirm that the data set is then well represented by the linear model.
 
 
-##Homoscedasticity
+## Homoscedasticity
 
 To check that the dataset is not biased, we verified that the variance is not dependent on the conditions of the experiment. Dependencies of the residuals on days were plotted, as \textit{days} variable differentiate the apples based on the experiment it was part of. 
 
@@ -225,7 +235,7 @@ title("residuals= f(days)")
 No pattern can be observed on the graph, which confirms the homoscedasticity of the dataset.
 
 
-#Discussion / Results (short)
+# Results and Discussion
 
 We have identified 4 characteristics influencing the course of infection.
 
@@ -242,8 +252,8 @@ The variable year is not relevant to explain the infection power. This means tha
 
 
 
-###Conclusion
-#TODO : finish it
+# Conclusion
+##TODO : finish it  
 The most impactant variable is the day of the infection : the infection is strongest (progresses more rapidly) when the apple is infected early.
 (Pas tres sure de comment interpreter ça ?)
 
@@ -251,16 +261,17 @@ The strains B (strains 2 and 3) are very less virulent.
 
 Finally, low temperature leads to more resistance of the apple.
 
-#Question to the teacher
-Is our method ok or only ANOVA ?
-Do you validate the part when we remove year ? 
+# Question to the teacher
+- Our method uses mainly the AIC score for model selection. Do we have to use the ANOVA score for this assignement (as in lab3), or is it acceptable ?
+- Do you validate the part when we remove year, even if it was included in the stepAIC return ? 
 
 
 #Répartition
 
-Corr?lations + Conclusion : Thibault 
-EDA sauf corr?lations : Audrey 
-Fit du model : Eloi
-Residuals + discussion : Auriane
+Corrélations + Conclusion : Thibault   
+EDA sauf corrélations : Audrey   
+Fit du model : Eloi  
+Residuals + discussion : Auriane  
+
 
 Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
