@@ -1,0 +1,218 @@
+---
+title: "Project A1 : Fungal invasion of the Apple fruit"
+author: "Auriane Cozic, Thibault de La Taille, Eloi Littner, Audrey Ménaësse"
+date: "May 1st, 2020"
+output: 
+  pdf_document:
+    df_print: paged
+geometry: margin=2.5cm
+fontsize: 12pt
+df_print: paged
+
+header-includes:
+- \usepackage{float}
+- \usepackage{bbm}
+- \usepackage{fancyhdr}
+- \usepackage{wrapfig, subfig}
+- \pagestyle{fancy}
+- \fancyhead[C]{Cozic, De La Taille, Littner, Ménaësse}
+- \fancyhead[L]{}
+- \fancyhead[R]{}
+
+---
+
+
+
+# Introduction
+
+Apples are among the best-preserved fruits. However, after a while fungi strains are inevitably starting to grow. In F.G. Gregory and A.S.Horne study, the conditions of infection, the progression of the invasion and the final stage of invasion were studied for two varieties of apple : the Cox’s Orange Pippin from Burwell, Cambridgeshire and Bramley’s seeding from 6 different localities. 
+The aim of our study is to compare the infecting power depending on the conditions of infection and the resistance to invasion of different varieties of apples and their characteristics.
+
+
+
+
+
+```{r, include=FALSE}
+#Load libraries and packages
+require(MASS)
+library(ggplot2)
+library(plotrix)
+library(ggpubr)
+library(lattice)
+library(gridExtra)
+library(grid)
+library(xtable)
+```
+
+```{r, include=FALSE}
+data <-read.table("http://users.stat.ufl.edu/~winner/data/apple1.dat")
+colnames(data) <- c("variety", "strain", "days", "weight", "radius", "fungal radial advance", "rate of advance")
+```
+
+# Exploratory data analysis
+## Data description
+
+To begin with, we want to get familiar with the data. The data set under study describes the fungal invasion of 35 apples. It contains 7 different variables, regarding the characteristics of the apple (variety, weight, radius), the strain of the fungi separated in 7 types (A, B11, B111, C1, C21, C3 and D) and the measurements of the infection (days after infection, fungal radial advance, rate of fungal advance).
+
+The variable *variety* contains several metadata information. Therefore, in order to have explicit variables in our model, we decided to split it into two new variables : the year when the experiment was conducted and the storage temperature of the apples. 
+
+The study is looking at 2 different varieties of apples and 7 fungi strains. It comes from 5 different experiments started in 1924 or 1925. 4 of them were performed at the same temperature (12°), but one was at (3°). The duration between the infection and the measurements is different for each experiment.
+
+
+
+
+```{r, include=FALSE}
+data$variety[data$variety <= 2]<-"Bramley"
+data$variety[data$variety <= 5]<-"Cox"
+data$year = 1924
+data$year[data$days == 70] <- 1925
+data$year[data$days == 86] <- 1925
+data$temperature<-12
+data$temperature[data$days == 138]<-3
+data$variety <- as.factor(data$variety)
+data$strain <- as.factor(data$strain)
+data$year <- as.factor(data$year) 
+data$temperature<- as.factor(data$temperature)
+```
+
+
+
+
+## Outliers
+
+Exploring the data, 3 outliers can be detected.
+The Cox apples *18* and *21* have a fungal radial advance superior to the apple radius. As it does not have any physical sense or meaningful explanation, they were removed.
+The infection did not develop in one apple *17*. The fungal radial advance is very lower to any other apple. As it the only case, it reveals an experimental error and was also removed.
+
+ 
+```{r, include=FALSE}
+data.rm<- data[-c(17,18,21),]
+```
+
+
+## Correlations and redundancy
+Then, we tried to identify correlations between variables prior to trying to model the infection power, as the presence of highly correlated explanatory variables would complexify the model without bringing any valuable information. After some exploration, we noticed that the apples' "weight" and their "radius" were highly correlated (based on Pearson's correlation coefficients), as shown below. This makes sense based on the physical relationship between these two, and we will hereafter ignore the "radius", as the apple "weight" would in our opinion be more reliable in an infection model. What's more, we can see a good correlation between the "fungal radial advance" and the "rate of advance", which is logical since the latter is computed by dividing the former by the number of "days" since infection; and since we are more interested in an infection power, independently of the time elapsed, we chose the "rate of advance" as our variable of interest and ignored the "fungal radial advance". 
+
+
+```{r, echo=FALSE}
+knitr::kable(cor(data.rm[c("weight", "radius", "fungal radial advance", "rate of advance")]), digits = 2, caption = "Pearson's correlation coefficients")
+```
+
+
+```{r, include=FALSE, fig.height=2}
+qplot1<-qplot(data.rm$days,data.rm$year, ylab = "Year", xlab = "Days", asp=1)
+qplot2<-qplot(data.rm$days,data.rm$temperature , ylab = "Temperature (°C)", xlab = "Days", asp = 0.93)
+qplot3<-qplot(data.rm$days,data.rm$variety, ylab = "Apple variety", xlab = "Days", asp = 1.12)
+grid.arrange(qplot1, qplot2, qplot3, nrow=1,top='Redundancy of "year"", "temperature" and "variety" in comparison to "days" post infection')
+```
+Furthermore, we can see that the factor "days" actually contains information on the "year", "temperature" and "apple variety" variables, which is coherent with how the different batches of apples were monitored. Because of that, we removed the "days" variable from our study as these correlated factors would affect our model.
+
+
+
+
+
+
+
+
+# Infection modeling
+## Full data 
+The exploratory data analysis enabled us to disentangle the non-redundant, independent
+parameters for modeling the progression of fungal infection in the apple. More precisely, we identified the infection rate of advance as the most reliable reporter of the infection strength and the variety, *Fusarium* strain, apple weight, storage temperature and year of experiment as potential explanatory variables.
+
+
+To select the most meaningful variables, we first fitted a full linear model, using all the independent parameters cited above. Then, we used the stepwise AIC (Akaike information criterion) method for model selection. This method serially checks if deleting or adding a variable to the model improves its AIC score until a minimum is reached : the lower the AIC score, the better the model.
+
+This method, when applied on the full data (with the outliers) yielded the following model with AIC score -317.68 : $$RateOfAdvance = \beta_0 + \beta_1.weight + \beta_2. \mathbbm{1}_{variety=Cox} +  \beta_3. \mathbbm{1}_{temperature=12} + \sum_{i=2}^{7}{\beta_{4,i}. \mathbbm{1}_{strain = i}} ~~(\textasteriskcentered{})$$
+
+Only "year" was removed from the explanatory variables, showing that no seasonality effect can be inferred from the data. Looking at the Cook's distance diagnostic plot confirmed the fact that samples 18 and 21, previously identified as non-sense data, have a strong influence on the model. Hence, we decided to do a further stepwise model selection using filtered data as described in the explanatory data analysis.
+
+## Data without outliers
+```{r,include=FALSE}
+fit.stepAIC <- stepAIC(lm(`rate of advance` ~ variety+strain+weight+temperature+year, data=data))
+
+fit.stepAIC
+
+```
+
+This time, the final model also included the variable "year", but with a tremendously high p-value $(Pr(>|t|) = 0.21363)$. To remain consistent with the model obtained when the whole dataset was used, we chose to run a final stepwise model selection without the "year" variable. Removing "year" did not change fundamentally the obtained AIC (-303.1 instead of -303.52 when "year" was included) and even slightly reduced the model's global p-value (0.002044 instead of 0.002403). Furthermore, an ANOVA of the two models yielded no significancy for the addition of year. Our final model is then also described by (\textasteriskcentered{}), with the following parameter values. To gauge the consistence of our model and the influence of outliers, we added the parameter estimate when fitted on the full data (last column, "FullData"). No important change could be observed.
+```{r,include=FALSE}
+fit.rm.stepAIC <- stepAIC(lm(`rate of advance` ~ variety+strain+weight+temperature, data=data.rm))
+fit.rm.stepAICfull <- stepAIC(lm(`rate of advance` ~ variety+strain+weight+temperature+year, data=data.rm))
+summary(fit.rm.stepAIC)
+summary(fit.rm.stepAICfull)
+
+```
+
+
+```{r,echo=FALSE}
+params <- xtable(summary(fit.rm.stepAIC))
+params$FullData <- xtable(summary(fit.stepAIC))$Estimate
+knitr::kable(params,digits=4, caption = "Coefficients of the model obtained by the step AIC method")
+```
+
+
+
+
+
+
+# Assessment of the model
+## Residuals
+
+In order to assess the model found previously, we first check the QQ-plot of the fitted data. 
+```{r echo = F, warning = F, message = F, fig.width=6, fig.height = 5, fig.cap = "Diagnostic plots", fig.subcap=c("\\label{fig:QQ}QQ-plot", "\\label{fig:resudials}residuals"), fig.pos= "htbp", out.height="6cm", out.width=".7\\linewidth", fig.align="center"}
+
+#par(pty="s")
+ plot(fit.rm.stepAIC, which=2, xlab= 'Theoretical quantiles of the linear model', sub="") #QQ
+ plot(fit.rm.stepAIC, which=1, sub="")#residuals
+```
+
+The tail of residuals is composed of a very few data points which are significantly far from the model. These two outliers (15 and 19) were already noticed during the exploratory data analysis, as having particularly advanced infection stage. 
+
+The study of the residuals is also important to assess the model. Indeed, if the residuals are not carrying any information relevant to the model, their mean should be zero and no pattern should appear, which is the case in the following plot.
+
+Based on these plots, we can confirm that the data set is then well represented by the linear model.
+
+
+## Homoscedasticity
+
+To check that the dataset is not biased, we verified that the variance is not dependent on the conditions of the experiment. Dependencies of the residuals on days were plotted, as \textit{days} variable differentiate the apples based on the experiment it was part of. 
+
+```{r,include=FALSE}
+plot(x=data.rm$days, y= residuals(fit.rm.stepAIC))
+title("residuals= f(days)")
+```
+
+No pattern can be observed on the graph, which confirms the homoscedasticity of the dataset.
+
+
+# Results and Discussion
+
+We have identified 4 characteristics influencing the course of infection.
+
+*Variety of the apple.* Infection progressed more slowly in Cox apples than in Bramley apples. This reveals that they have different resistance to the fungal invasion and that one should prefer Cox’s Orange Pippin than Bramley’s seeding to avoid infections in its fruits.
+
+*Strain of the fungi* The fungi strain influenced the rate of fungal advance. Especially, the two B strains (B11 and B111) are less invasive than all others.Different fungi strain can thus have different infecting power.
+
+*Temperature* Some environmental conditions play a role in infection, as the temperature. Very cold temperature (3°) delays the course of infection, compared to cold temperatures (12°). However, only one experiment was conducted at 3° with 7 apples. This represents very few amount of data, which explains the high variance associated. It is thus difficult to affirm any generalities about the ideal temperature, but we can assess that this variable has a significative impact.
+
+*Weight of the apple* The weight of the apple, and by extension its size has some impact on the speed of the infection. The heavier, the more rapidly the infection progresses. IHowever, this influence is moderate. We suggest it is due to the fact that the infection is less limited by the boundary conditions, and that this variable is not related to the resistance of the apple itself.
+
+
+The variable year is not relevant to explain the infection power. This means that the experiments were reproducible, and support the affirmation that the dataset is unbiased.
+
+
+
+# Conclusion
+##TODO : finish it  
+The most impactant variable is the day of the infection : the infection is strongest (progresses more rapidly) when the apple is infected early.
+(Pas tres sure de comment interpreter ça ?)
+
+The strains B (strains 2 and 3) are very less virulent.
+
+Finally, low temperature leads to more resistance of the apple.
+
+# Questions to the teacher
+- Our method uses mainly the AIC score for model selection. Do we have to use the ANOVA score for this assignement (as in lab3), or is it acceptable ?
+- Do you validate the part when we remove year, even if it was included in the stepAIC return ? 
+
+
