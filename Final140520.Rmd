@@ -25,7 +25,7 @@ header-includes:
 
 # Introduction
 
-Apples are among the best-preserved fruits. However, after a while fungi strains are inevitably starting to grow. In F.G. Gregory and A.S.Horne study, the conditions of infection, the progression of the invasion and the final stage of invasion were studied for two varieties of apple : the Cox’s Orange Pippin from Burwell, Cambridgeshire and Bramley’s seeding from 6 different localities. 
+Apples are among the best-preserved fruits. However, after a while fungi strains are inevitably starting to grow. In a 1928 Gregory and Horne study \footnote{Gregory, F. G., and Horne, A. S. “A Quantitative Study of the Course of Fungal Invasion of the Apple Fruit and Its Bearing on the Nature of Disease Resistance.--Part I. A Statistical Method of Studying Fungal Invasion.” Proceedings of the Royal Society of London. Series B, Containing Papers of a Biological Character, vol. 102, no. 719, 1928, pp. 427–443}, the conditions of infection, the progression of the invasion and the final stage of invasion were studied for two varieties of apple : the Cox’s Orange Pippin from Burwell, Cambridgeshire and Bramley’s seeding from 6 different localities. 
 The aim of our study is to compare the infecting power depending on the conditions of infection and the resistance to invasion of different varieties of apples and their characteristics.
 
 
@@ -91,11 +91,11 @@ data.rm<- data[-c(17,18,21),]
 
 
 ## Correlations and redundancy
-Then, we tried to identify correlations between variables prior to trying to model the infection power, as the presence of highly correlated explanatory variables would complexify the model without bringing any valuable information. After some exploration, we noticed that the apples' "weight" and their "radius" were highly correlated (based on Pearson's correlation coefficients), as shown below. This makes sense based on the physical relationship between these two, and we will hereafter ignore the "radius", as the apple "weight" would in our opinion be more reliable in an infection model. What's more, we can see a good correlation between the "fungal radial advance" and the "rate of advance", which is logical since the latter is computed by dividing the former by the number of "days" since infection; and since we are more interested in an infection power, independently of the time elapsed, we chose the "rate of advance" as our variable of interest and ignored the "fungal radial advance". 
+Then, we tried to identify correlations between variables prior to trying to model the infection power, as the presence of highly correlated explanatory variables would complexify the model without bringing any valuable information. After some exploration, we noticed that the apples' "weight" and their "radius" were highly correlated (based on Pearson's correlation coefficients), as shown below. This makes sense based on the physical relationship between these two, and we will hereafter ignore the "radius". What's more, we can see a good correlation between the "fungal radial advance" and the "rate of advance", which also makes sense given how the latter is calculated; and since we are more interested in an infection power, independently of the time elapsed, we chose the "rate of advance" as our variable of interest and ignored the "fungal radial advance". 
 
 
 ```{r, echo=FALSE}
-knitr::kable(cor(data.rm[c("weight", "radius", "fungal radial advance", "rate of advance")]), digits = 2, caption = "Pearson's correlation coefficients")
+knitr::kable(cor(data.rm[c("weight", "radius", "fungal radial advance", "rate of advance", "days")]), digits = 2, caption = "Pearson's correlation coefficients")
 ```
 
 
@@ -105,7 +105,7 @@ qplot2<-qplot(data.rm$days,data.rm$temperature , ylab = "Temperature (°C)", xla
 qplot3<-qplot(data.rm$days,data.rm$variety, ylab = "Apple variety", xlab = "Days", asp = 1.12)
 grid.arrange(qplot1, qplot2, qplot3, nrow=1,top='Redundancy of "year"", "temperature" and "variety" in comparison to "days" post infection')
 ```
-Furthermore, we can see that the factor "days" actually contains information on the "year", "temperature" and "apple variety" variables, which is coherent with how the different batches of apples were monitored. Because of that, we removed the "days" variable from our study as these correlated factors would affect our model.
+Furthermore, we can see in the data that the factor "days" always explains unambiguously the "year", "temperature" and "apple variety" variables, which is coherent with how the different batches of apples were monitored. Because of that, we removed the "days" variable as it would prevent the obtention of a proper model.
 
 
 
@@ -203,13 +203,8 @@ The variable year is not relevant to explain the infection power. This means tha
 
 
 # Conclusion
-##TODO : finish it  
-The most impactant variable is the day of the infection : the infection is strongest (progresses more rapidly) when the apple is infected early.
-(Pas tres sure de comment interpreter ça ?)
 
-The strains B (strains 2 and 3) are very less virulent.
-
-Finally, low temperature leads to more resistance of the apple.
+We therefore were able, in the given dataset, to identify which variables might be interesting to explain the differences in the invasive power of different fungi strains in two apple varieties under various conditions; and by fitting a linear model, we could confidently explain the rate of invasion by a small number of factors: one apple variety appears to be less susceptible than the other, cold seems (but this result is still debatable due to experiment design) to slow the invasion, fungi strains are separated in two groups, one being significantly less invasive than the other (strains B11 and B111), and the heavier an apple weighs, the more susceptible to infection it is. We were able to assess the independence of the modeled variables, as well as the normality of residuals and the homoscedasticity, therefore validating our approach. 
 
 # Questions to the teacher
 - Our method uses mainly the AIC score for model selection. Do we have to use the ANOVA score for this assignement (as in lab3), or is it acceptable ?
