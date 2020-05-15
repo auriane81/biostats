@@ -1,5 +1,5 @@
 ---
-title: "Project A1 : Fungal invasion of the apple fruit"
+title: "Project A1: Fungal invasion of the apple fruit"
 author: "Auriane Cozic, Thibault de La Taille, Eloi Littner, Audrey Ménaësse"
 output: 
   pdf_document:
@@ -24,7 +24,7 @@ header-includes:
 
 # Introduction
 
-Apples are among the best-preserved fruits. However, after a while fungi strains are inevitably starting to grow. In their 1928's study, Gregory et Horne\footnote{Gregory, F. G., and Horne, A. S. "A Quantitative Study of the Course of Fungal Invasion of the Apple Fruit and Its Bearing on the Nature of Disease Resistance.--Part I. A Statistical Method of Studying Fungal Invasion." Proceedings of the Royal Society of London. Series B, Containing Papers of a Biological Character, vol. 102, no. 719, 1928, pp. 427-443} studied the conditions of infection, the progression of the invasion and the final stage of invasion  for two varieties of apple : the Cox's Orange Pippin from Burwell, Cambridgeshire and Bramley's seeding from 6 different localities. 
+Apples are among the best-preserved fruits. However, after a while, fungi strains are inevitably starting to grow. In their 1928's study, Gregory et Horne\footnote{Gregory, F. G., and Horne, A. S. "A Quantitative Study of the Course of Fungal Invasion of the Apple Fruit and Its Bearing on the Nature of Disease Resistance.--Part I. A Statistical Method of Studying Fungal Invasion." Proceedings of the Royal Society of London. Series B, Containing Papers of a Biological Character, vol. 102, no. 719, 1928, pp. 427-443} studied the conditions of infection, the progression of the invasion and the final stage of invasion  for two varieties of apple: the Cox's Orange Pippin from Burwell, Cambridgeshire and Bramley's seeding from 6 different localities. 
 The aim of our study is to compare the infecting power depending on the conditions of infection and the resistance to invasion of different varieties of apples and their characteristics.
 
 
@@ -51,9 +51,9 @@ colnames(data) <- c("variety", "strain", "days", "weight", "radius", "fungal rad
 # Exploratory data analysis
 ## Data description
 
-The dataset under study describes the fungal invasion of 35 apples. It contains 7 different variables, namely the characteristics of the apple (variety, weight, radius), the strain of the fungi separated in 7 types (A, B11, B111, C1, C21, C3 and D) and the measurements of the infection (days after infection, fungal radial advance, rate of fungal advance).
+The dataset under study describes the fungal invasion of 35 apples. It contains 7 different variables, namely the characteristics of the apple (variety, weight, radius), the fungi strains separated into 7 types (A, B11, B111, C1, C21, C3 and D) and the measurements of the infection (days after infection, fungal radial advance, rate of fungal advance).
 
-The variable *variety* contains several metadata information. Therefore, in order to have explicit variables in our model, we decided to split it into three new variables : the variety of the apple, the year when the experiment was conducted and the storage temperature. 
+The variable *variety* contains several metadata information. Therefore, in order to have explicit variables in our model, we decided to split it into three new variables: the variety of the apple, the year when the experiment was conducted and the storage temperature. 
 
 The study involves 2 different varieties of apples and 7 fungi strains. The data results from 5 different experiments started either in 1924 or 1925. 4 of them were performed at the same temperature (12 °C), and the last one at 3 °C. The duration between the infection and the measurements is different for each experiment.
 
@@ -117,9 +117,9 @@ Then, the factor "days" always explained unambiguously the "year", "temperature"
 The exploratory data analysis enabled us to disentangle the non-redundant, independent parameters for modeling the progression of fungal infection in the apple. More precisely, we identified the infection rate of advance as the most reliable reporter of the infection strength and the variety, *Fusarium* strain, apple weight, storage temperature and year of experiment as potential explanatory variables.
 
 
-To select the most meaningful variables, we first fitted a full linear model, using all the independent parameters cited above. Then, we used the stepwise AIC (Akaike information criterion) method for model selection. This method serially checks if deleting or adding a variable to the model improves its AIC score until a minimum is reached : the lower the AIC score, the better the model.
+To select the most meaningful variables, we first fitted a full linear model, using all the independent parameters cited above. Then, we used the stepwise AIC (Akaike information criterion) method for model selection. This method serially checks if deleting or adding a variable to the model improves its AIC score until a minimum is reached: the lower the AIC score, the better the model.
 
-This method, when applied on the full data (including the outliers) yielded the following model with AIC score -317.68 : $$RateOfAdvance = \beta_0 + \beta_1.weight + \beta_2. \mathbbm{1}_{variety=Cox} +  \beta_3. \mathbbm{1}_{temperature=12} + \sum_{i=2}^{7}{\beta_{4,i}. \mathbbm{1}_{strain = i}} ~~(\textasteriskcentered{})$$
+This method, when applied on the full data (including the outliers) yielded the following model with AIC score -317.68: $$RateOfAdvance = \beta_0 + \beta_1.weight + \beta_2. \mathbbm{1}_{variety=Cox} +  \beta_3. \mathbbm{1}_{temperature=12} + \sum_{i=2}^{7}{\beta_{4,i}. \mathbbm{1}_{strain = i}} ~~(\textasteriskcentered{})$$
 
 Only "year" was removed from the explanatory variables, showing that no seasonality effect can be inferred from the data. Looking at the Cook's distance diagnostic plot confirmed the fact that samples 18 and 21, previously identified as non-sense data, have a strong influence on the model. Hence, we decided to do a further stepwise model selection using filtered data as described in the explanatory data analysis.
 

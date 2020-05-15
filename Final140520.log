@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.21 (TeX Live 2020/W32TeX) (preloaded format=pdflatex 2020.5.8)  15 MAY 2020 10:57
+This is pdfTeX, Version 3.14159265-2.6-1.40.21 (TeX Live 2020/W32TeX) (preloaded format=pdflatex 2020.5.8)  15 MAY 2020 14:24
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -640,7 +640,7 @@ LaTeX Font Info:    External font `lmex10' loaded for size
 LaTeX Font Info:    External font `lmex10' loaded for size
 (Font)              <5> on input line 91.
 LaTeX Font Info:    Trying to load font information for TS1+lmr on input line 1
-17.
+16.
 (c:/Users/eloi0/AppData/Roaming/TinyTeX/texmf-dist/tex/latex/lm/ts1lmr.fd
 File: ts1lmr.fd 2009/10/30 v1.6 Font defs for Latin Modern
 ) [1
@@ -654,7 +654,7 @@ We now make it that large for the rest of the document.
 This may cause the page layout to be inconsistent, however.
 
 [2]
-LaTeX Font Info:    Trying to load font information for U+bbm on input line 193
+LaTeX Font Info:    Trying to load font information for U+bbm on input line 192
 .
 
 (c:/Users/eloi0/AppData/Roaming/TinyTeX/texmf-dist/tex/latex/bbm-macros/ubbm.fd
@@ -662,46 +662,46 @@ File: ubbm.fd 1999/03/15 V 1.2 Font definition for bbm font - TH
 )
 
 LaTeX Warning: Command \textasteriskcentered invalid in math mode on input line
- 193.
+ 192.
 
 
 LaTeX Warning: Command \textasteriskcentered invalid in math mode on input line
- 193.
+ 192.
 
 [3]
-<Final140520_files/figure-latex/unnamed-chunk-10-1.pdf, id=92, 433.62pt x 361.3
+<Final140520_files/figure-latex/unnamed-chunk-10-1.pdf, id=88, 433.62pt x 361.3
 5pt>
 File: Final140520_files/figure-latex/unnamed-chunk-10-1.pdf Graphic file (type 
 pdf)
 <use Final140520_files/figure-latex/unnamed-chunk-10-1.pdf>
 Package pdftex.def Info: Final140520_files/figure-latex/unnamed-chunk-10-1.pdf 
- used on input line 256.
+ used on input line 255.
 (pdftex.def)             Requested size: 204.86006pt x 170.71672pt.
-<Final140520_files/figure-latex/unnamed-chunk-10-2.pdf, id=93, 433.62pt x 361.3
+<Final140520_files/figure-latex/unnamed-chunk-10-2.pdf, id=89, 433.62pt x 361.3
 5pt>
 File: Final140520_files/figure-latex/unnamed-chunk-10-2.pdf Graphic file (type 
 pdf)
 <use Final140520_files/figure-latex/unnamed-chunk-10-2.pdf>
 Package pdftex.def Info: Final140520_files/figure-latex/unnamed-chunk-10-2.pdf 
- used on input line 256.
+ used on input line 255.
 (pdftex.def)             Requested size: 204.86006pt x 170.71672pt.
 [4 <./Final140520_files/figure-latex/unnamed-chunk-10-1.pdf> <./Final140520_fil
-es/figure-latex/unnamed-chunk-10-2.pdf>] [5]
-Package atveryend Info: Empty hook `BeforeClearDocument' on input line 348.
-[6]
-Package atveryend Info: Empty hook `AfterLastShipout' on input line 348.
+es/figure-latex/unnamed-chunk-10-2.pdf>]
+Package atveryend Info: Empty hook `BeforeClearDocument' on input line 334.
+[5]
+Package atveryend Info: Empty hook `AfterLastShipout' on input line 334.
 (./Final140520.aux)
-Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 348.
-Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 348.
+Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 334.
+Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 334.
 Package rerunfilecheck Info: File `Final140520.out' has not changed.
-(rerunfilecheck)             Checksum: 552752727592FD8604AF68B8CCC197B1;1947.
-Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 348.
+(rerunfilecheck)             Checksum: 4D037818C1D369C201CCA4968F53E1F7;1772.
+Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 334.
  ) 
 Here is how much of TeX's memory you used:
- 11758 strings out of 482604
- 176139 string characters out of 5950396
- 417846 words of memory out of 5000000
- 27096 multiletter control sequences out of 15000+600000
+ 11753 strings out of 482604
+ 176070 string characters out of 5950396
+ 417789 words of memory out of 5000000
+ 27093 multiletter control sequences out of 15000+600000
  592974 words of font info for 75 fonts, out of 8000000 for 9000
  14 hyphenation exceptions out of 8191
  50i,11n,49p,432b,445s stack positions out of 5000i,500n,10000p,200000b,80000s
@@ -724,10 +724,10 @@ AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/lm/lmr7.pfb><c:/Users/elo
 i0/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/lm/lmr8.pfb><c:/Users/
 eloi0/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/lm/lmri12.pfb><c:/U
 sers/eloi0/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/lm/lmsy10.pfb>
-Output written on Final140520.pdf (6 pages, 219937 bytes).
+Output written on Final140520.pdf (5 pages, 218484 bytes).
 PDF statistics:
- 176 PDF objects out of 1000 (max. 8388607)
- 150 compressed objects within 2 object streams
- 27 named destinations out of 1000 (max. 500000)
- 123 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 168 PDF objects out of 1000 (max. 8388607)
+ 143 compressed objects within 2 object streams
+ 25 named destinations out of 1000 (max. 500000)
+ 115 words of extra memory for PDF output out of 10000 (max. 10000000)
 
