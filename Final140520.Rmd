@@ -24,7 +24,7 @@ header-includes:
 
 # Introduction
 
-Apples are among the best-preserved fruits. However, after a while fungi strains are inevitably starting to grow. In their 1928's study, Gregory et Horne\footnote{Gregory, F. G., and Horne, A. S. "A Quantitative Study of the Course of Fungal Invasion of the Apple Fruit and Its Bearing on the Nature of Disease Resistance.--Part I. A Statistical Method of Studying Fungal Invasion." Proceedings of the Royal Society of London. Series B, Containing Papers of a Biological Character, vol. 102, no. 719, 1928, pp. 427-443}, the conditions of infection, the progression of the invasion and the final stage of invasion were studied for two varieties of apple : the Cox's Orange Pippin from Burwell, Cambridgeshire and Bramley's seeding from 6 different localities. 
+Apples are among the best-preserved fruits. However, after a while fungi strains are inevitably starting to grow. In their 1928's study, Gregory et Horne\footnote{Gregory, F. G., and Horne, A. S. "A Quantitative Study of the Course of Fungal Invasion of the Apple Fruit and Its Bearing on the Nature of Disease Resistance.--Part I. A Statistical Method of Studying Fungal Invasion." Proceedings of the Royal Society of London. Series B, Containing Papers of a Biological Character, vol. 102, no. 719, 1928, pp. 427-443} studied the conditions of infection, the progression of the invasion and the final stage of invasion  for two varieties of apple : the Cox's Orange Pippin from Burwell, Cambridgeshire and Bramley's seeding from 6 different localities. 
 The aim of our study is to compare the infecting power depending on the conditions of infection and the resistance to invasion of different varieties of apples and their characteristics.
 
 
@@ -90,7 +90,7 @@ data.rm<- data[-c(17,18,21),]
 
 
 ## Correlations and redundancy
-Then, we tried to identify correlations between variables prior to trying to model the infection power, as the presence of highly correlated explanatory variables would complexify the model without bringing any valuable information. Wee noticed that the apples' "weight" and their "radius" were highly correlated (based on Pearson's correlation coefficients), as shown below. This makes sense based on the physical relationship between these two, and we decided hereafter to ignore the "radius". Furthermore, we found a good correlation between the "fungal radial advance" and the "rate of advance", which also makes sense given how the latter was calculated. Since we are more interested in an infection power, independently of the time elapsed, we chose the "rate of advance" as our variable of interest and ignored the "fungal radial advance". 
+Then, we tried to identify correlations between variables prior to trying to model the infection power, as the presence of highly correlated explanatory variables would complexify the model without bringing any valuable information. We noticed that the apples' "weight" and their "radius" were highly correlated (based on Pearson's correlation coefficients), as shown below. This makes sense based on the physical relationship between these two, and we decided hereafter to ignore the "radius". Furthermore, we found a good correlation between the "fungal radial advance" and the "rate of advance", which also makes sense given how the latter was calculated. Since we are more interested in an infection power, independently of the time elapsed, we chose the "rate of advance" as our variable of interest and ignored the "fungal radial advance". 
 
 
 ```{r, echo=FALSE}
@@ -190,7 +190,7 @@ We identified 4 characteristics influencing the course of infection.
 
 *Fungi strain* The fungi strain influenced the rate of fungal advance. More precisely, the two B strains (B11 and B111) are less invasive than all others. Different fungi strain can thus have different infecting power.
 
-*Temperature* Some environmental conditions, as the storage temperature, play a role in the infection. Very cold temperature °C seems to delay the course of infection, when compared to higher temperatures (12 °C). However, only one experiment was conducted at 3 °C with as few as 7 apples. This represents very few amount of data, which explains the high variance associated. It is thus difficult to infer any general conclusion about the ideal temperature, but we can assess that this variable has a significative impact.
+*Temperature* Some environmental conditions, as the storage temperature, play a role in the infection. Very cold temperature (3°C) seems to delay the course of infection, when compared to higher temperatures (12 °C). However, only one experiment was conducted at 3 °C with as few as 7 apples. This represents very few amount of data, which explains the high variance associated. It is thus difficult to infer any general conclusion about the ideal temperature, but we can assess that this variable has a significative impact.
 
 *Apple weight* The apple weight, and by extension its size, has some impact on the speed of the infection. The heavier the apple, the more rapidly the infection progresses. However, this influence is moderate. We suggest it is due to the infection being less limited by the boundary conditions in bigger apples, and that this variable is not related to the resistance of the apple itself.
 
@@ -203,8 +203,8 @@ The variable year is not relevant to explain the infection power. This observati
 
 We were able, in the given dataset, to identify which variables may be meaningful to explain the differences in the invasive power of different fungi strains in two apple varieties under various conditions. By fitting a linear model, we could confidently explain the rate of invasion by a small number of factors: one apple variety appeared to be less susceptible than the other, cold seemed (but this result is still debatable due to the experiment design) to slow the invasion. Fungi strains were separated into two groups, one being significantly less invasive than the other (strains B11 and B111), and the heavier an apple weighs, the more susceptible to infection it is. We were able to assess the independence of the modeled variables, as well as the normality of residuals and the homoscedasticity, therefore validating our approach. 
 
-# Questions to the teacher
-- Our method uses mainly the AIC score for model selection. Do we have to use the ANOVA score for this assignement (as in lab3), or is it acceptable ?
-- Do you validate the part when we remove year, even if it was included in the stepAIC return (when run over the filtered dataset) ? 
-
+<!-- # Questions to the teacher -->
+<!-- - Our method uses mainly the AIC score for model selection. Do we have to use the ANOVA score for this assignement (as in lab3), or is it acceptable ? -->
+<!-- - Do you validate the part when we remove year, even if it was included in the stepAIC return (when run over the filtered dataset) ?  -->
+<!-- - Should we include all the diagnostic plots we are refering to, or is it enough to assess we did verify (homoscedasticity, full data model Cook's distance) ? -->
 
