@@ -1,7 +1,6 @@
 ---
 title: "Project A1 : Fungal invasion of the apple fruit"
 author: "Auriane Cozic, Thibault de La Taille, Eloi Littner, Audrey Ménaësse"
-date: "May 1st, 2020"
 output: 
   pdf_document:
     df_print: paged
