@@ -15,7 +15,7 @@ header-includes:
 - \usepackage{fancyhdr}
 - \usepackage{wrapfig, subfig}
 - \pagestyle{fancy}
-- \fancyhead[C]{Cozic, De La Taille, Littner, MÃ©naÃ«sse}
+- \fancyhead[C]{Cozic, De La Taille, Littner, Ménaësse}
 - \fancyhead[L]{}
 - \fancyhead[R]{}
 
