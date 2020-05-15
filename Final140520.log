@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.21 (TeX Live 2020/W32TeX) (preloaded format=pdflatex 2020.5.8)  15 MAY 2020 10:52
+This is pdfTeX, Version 3.14159265-2.6-1.40.21 (TeX Live 2020/W32TeX) (preloaded format=pdflatex 2020.5.8)  15 MAY 2020 10:56
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -698,10 +698,10 @@ Package rerunfilecheck Info: File `Final140520.out' has not changed.
 Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 348.
  ) 
 Here is how much of TeX's memory you used:
- 11759 strings out of 482604
- 176155 string characters out of 5950396
- 417867 words of memory out of 5000000
- 27097 multiletter control sequences out of 15000+600000
+ 11758 strings out of 482604
+ 176139 string characters out of 5950396
+ 417859 words of memory out of 5000000
+ 27096 multiletter control sequences out of 15000+600000
  592974 words of font info for 75 fonts, out of 8000000 for 9000
  14 hyphenation exceptions out of 8191
  50i,11n,49p,432b,445s stack positions out of 5000i,500n,10000p,200000b,80000s
@@ -724,7 +724,7 @@ AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/lm/lmr7.pfb><c:/Users/elo
 i0/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/lm/lmr8.pfb><c:/Users/
 eloi0/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/lm/lmri12.pfb><c:/U
 sers/eloi0/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/lm/lmsy10.pfb>
-Output written on Final140520.pdf (6 pages, 220724 bytes).
+Output written on Final140520.pdf (6 pages, 219956 bytes).
 PDF statistics:
  176 PDF objects out of 1000 (max. 8388607)
  150 compressed objects within 2 object streams
